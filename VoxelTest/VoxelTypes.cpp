@@ -2,5 +2,5 @@
 
 GLuint getTexture(VoxelType type)
 {
-	return GLuint();
+	return TextureManager::getTexture(type);
 }

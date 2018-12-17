@@ -15,6 +15,4 @@
 
 #include "Logger.h"
 
-extern bool MODE_2D;
-
 #endif // !_DEFINES_H

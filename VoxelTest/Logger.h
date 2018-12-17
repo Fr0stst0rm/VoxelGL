@@ -14,8 +14,8 @@ class Logger
 {
 public:
 	
-	static void log(string text);
-	static void logln(string line);
+	static inline void log(string text);
+	static inline void logln(string line);
 
 	static void setLogFile(string filePath);
 
