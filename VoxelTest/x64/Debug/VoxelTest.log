@@ -1,0 +1,10 @@
+﻿  Main.cpp
+  Object3d.cpp
+s:\workspace_game_dev\voxeltest\voxeltest\object3d.cpp(31): error C2065: 'texture': undeclared identifier
+s:\workspace_game_dev\voxeltest\voxeltest\object3d.cpp(34): error C2065: 'texture': undeclared identifier
+s:\workspace_game_dev\voxeltest\voxeltest\object3d.cpp(71): error C2065: 'rotationZ': undeclared identifier
+s:\workspace_game_dev\voxeltest\voxeltest\object3d.cpp(91): error C2065: 'texture': undeclared identifier
+  Cube.cpp
+s:\workspace_game_dev\voxeltest\voxeltest\cube.cpp(9): error C2039: 'size': is not a member of 'Cube'
+  s:\workspace_game_dev\voxeltest\voxeltest\cube.h(8): note: see declaration of 'Cube'
+  Generating Code...
