@@ -1,3 +1,6 @@
+#ifndef TGA_H
+#define TGA_H 
+
 #define TGA_ERROR_FILE_OPEN          -5
 #define TGA_ERROR_READING_FILE       -4
 #define TGA_ERROR_INDEXED_COLOR      -3
@@ -31,3 +34,5 @@ void tgaRGBtoGreyscale(tgaInfo *info);
 int tgaGrabScreenSeries(char *filename, int x, int y, int w, int h);
 
 void tgaDestroy(tgaInfo *info);
+
+#endif // !TGA_H

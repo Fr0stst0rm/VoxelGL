@@ -26,10 +26,8 @@
 class Object3D
 {
 public:
-	Object3D();
+	
 	virtual ~Object3D();
-
-	void setTexture(std::string path);
 
 	//Function called by the glut display loop
 	void draw(float x, float y, float z);
@@ -40,13 +38,16 @@ public:
 
 
 protected:
-	
+	Object3D();
+
 	// virtual function to override, to create the 3D mash
 	virtual void createMesh() = 0;
 
 	virtual GLuint getTexture();
 
 private:
+	
+
 };
 
 #endif // !_OBJECT_3D_H
