@@ -1,8 +1,8 @@
 #pragma once
 
-#ifndef VOXELTYPE_H
+#ifndef VOXELTYPES_H
 
-#define VOXELTYPE_H
+#define VOXELTYPES_H
 
 #include "Defines.h"
 #include "TextureManager.h"
@@ -11,9 +11,19 @@ enum VoxelType : uint16_t {
 	AIR = 0,
 	BEDROCK = 1,
 	DIRT = 2,
-	GRASS = 3
+	GRASS = 3,
+	GLASS_GREEN = 4,
+	GLASS_RED = 5,
+	GLASS_BLUE = 6
 };
 
-GLuint getTexture(VoxelType type);
+extern RGBA colorTable[];
 
-#endif // !VOXELTYPE_H
+namespace VoxelTypes
+{
+	GLuint getTexture(VoxelType type);
+	RGBA getColor(VoxelType type);
+	bool isTransparent(VoxelType type);
+	bool hasTexture(VoxelType type);
+}
+#endif // !VOXELTYPES_H

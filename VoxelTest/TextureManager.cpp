@@ -1,14 +1,15 @@
 #include "TextureManager.h"
 
-std::vector<GLuint> TextureManager::m_textureLib;
+std::map<uint16_t, GLuint> TextureManager::m_textureLib;
 
 TextureManager::TextureManager() {
 	std::cout << "Loding texture config from: " << m_pathToTextureConfigFile << "\n";
 
 	//TODO
-	addTexture("cheese.tga");
-	addTexture("crate.tga");
-	addTexture("wall.tga");
+	addTexture(0, "cheese.tga");
+	addTexture(1, "VoxelTexture.tga");
+	addTexture(2, "crate.tga");
+	addTexture(3, "wall.tga");
 }
 
 TextureManager::~TextureManager() {
@@ -17,17 +18,22 @@ TextureManager::~TextureManager() {
 
 TextureManager & TextureManager::getInstance()
 {
-	static TextureManager    instance; // Guaranteed to be destroyed.
+	static TextureManager instance; // Guaranteed to be destroyed.
 	return instance;
 }
 
 GLuint TextureManager::getTexture(uint16_t textureIndex)
 {
-	return getInstance().m_textureLib.at(0); //TODO
+	return getInstance().m_textureLib[textureIndex]; //TODO
+}
+
+bool TextureManager::containsTexture(uint16_t textureIndex)
+{
+	return (getInstance().m_textureLib.find(textureIndex) != getInstance().m_textureLib.end());
 }
 
 
-void TextureManager::addTexture(std::string path)
+void TextureManager::addTexture(uint16_t index, const std::string path, bool generateMipMap)
 {
 	GLsizei w, h;
 	tgaInfo *info = 0;
@@ -56,8 +62,8 @@ void TextureManager::addTexture(std::string path)
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
 	// Upload the texture bitmap. 
@@ -65,10 +71,13 @@ void TextureManager::addTexture(std::string path)
 	h = info->height;
 
 	GLint format = (mode == 4) ? GL_RGBA : GL_RGB;
-	glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format,
-		GL_UNSIGNED_BYTE, info->imageData);
-
+	if (generateMipMap) {
+		gluBuild2DMipmaps(GL_TEXTURE_2D, format, w, h, format, GL_UNSIGNED_BYTE, info->imageData);
+	}
+	else {
+		glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, info->imageData);
+	}
 	tgaDestroy(info);
 
-	m_textureLib.push_back(texture);
+	m_textureLib[index] = texture;
 }

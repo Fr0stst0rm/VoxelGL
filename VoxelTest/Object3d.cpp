@@ -8,52 +8,67 @@ Object3D::~Object3D()
 {
 }
 
-void Object3D::draw(float x, float y, float z)
+void Object3D::drawColor(float x, float y, float z, RGBA color)
 {
-	draw(x,y,z,1);
+	drawColor(x, y, z, 1, color.red, color.green, color.blue, color.alpha);
 }
 
-void Object3D::draw(float x, float y, float z, float size)
+void Object3D::drawColor(float x, float y, float z, float size, RGBA color)
 {
-	glPushMatrix();
-	glTranslatef(x, y, z);
-	//glTranslatef(0, y, 0);
-	//glTranslatef(0, 0, z);
-	
-	glScalef(size, size, 1.0f);
+	drawColor(x, y, z, size, color.red, color.green, color.blue, color.alpha);
+}
 
-	glPushMatrix();
+void Object3D::drawColor(float x, float y, float z, float r, float g, float b, float a)
+{
+	drawColor(x, y, z, 1, r, g, b, a);
+}
 
-	glTranslatef(0.0f, 0.0f, 0.0f);
-	//glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
-	
-	glColor3f(0, 1, 0); // TODO set color
+void Object3D::drawColor(float x, float y, float z, float size, float r, float g, float b, float a)
+{
 
-	createMesh();	
-	
-	glPopMatrix();
-	
-	glPopMatrix();
-
+	glColor4f(r, g, b,a);
+	draw(x, y, z, size);
 
 }
 
-void Object3D::drawTexture(float x, float y, float z)
+void Object3D::drawTexture(float x, float y, float z, GLuint texture)
 {
-	drawTexture(x, y, z, 1);
+	drawTexture(x, y, z, 1, texture);
 }
 
-void Object3D::drawTexture(float x, float y, float z, float size)
+void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture)
 {
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	glBindTexture(GL_TEXTURE_2D, getTexture());
+	glBindTexture(GL_TEXTURE_2D, texture);
 
 	draw(x, y, z, size);
 
 	glDisable(GL_TEXTURE_2D);
 }
 
-GLuint Object3D::getTexture() {
-	return NULL;
+void Object3D::draw(float x, float y, float z)
+{
+	draw(x, y, z, 1);
+}
+
+void Object3D::draw(float x, float y, float z, float size)
+{
+	glPushMatrix();
+	glTranslatef(x, y, z);
+
+	glScalef(size, size, size);
+
+	glPushMatrix();
+
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	//glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
+
+	createMesh();
+
+	glPopMatrix();
+
+	glPopMatrix();
+
+
 }

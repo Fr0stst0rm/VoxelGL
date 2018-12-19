@@ -14,7 +14,8 @@
 #include <string>
 #include <math.h>
 
-#include "tga.h"
+#include "Tga.h"
+#include "Defines.h"
 
 /* some math.h files don't define pi...*/
 #ifndef M_PI
@@ -26,15 +27,18 @@
 class Object3D
 {
 public:
-	
+
 	virtual ~Object3D();
 
 	//Function called by the glut display loop
-	void draw(float x, float y, float z);
-	void draw(float x, float y, float z, float size);
 
-	void drawTexture(float x, float y, float z);
-	void drawTexture(float x, float y, float z, float size);
+	void drawColor(float x, float y, float z, RGBA color);
+	void drawColor(float x, float y, float z, float r, float g, float b, float a);
+	void drawColor(float x, float y, float z, float size, RGBA color);
+	void drawColor(float x, float y, float z, float size, float r, float g, float b, float a);
+
+	void drawTexture(float x, float y, float z, GLuint texture);
+	void drawTexture(float x, float y, float z, float size, GLuint texture);
 
 
 protected:
@@ -43,10 +47,11 @@ protected:
 	// virtual function to override, to create the 3D mash
 	virtual void createMesh() = 0;
 
-	virtual GLuint getTexture();
+	void draw(float x, float y, float z);
+	void draw(float x, float y, float z, float size);
 
 private:
-	
+
 
 };
 

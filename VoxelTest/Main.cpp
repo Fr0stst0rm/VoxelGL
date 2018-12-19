@@ -2,13 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <vector>
 
 #include "Defines.h"
 
 #include "Player.h"
 
-#include "Cube.h"
+#include "Voxel.h"
+#include "LoadedLevel.h"
+
 #include "Level1.h"
+
+#include "LodObject.h"
 
 using namespace std;
 
@@ -17,9 +22,12 @@ int window;
 int const win_width = 1920;
 int const win_height = 1080;
 
+int xRotationOffset = -1;
+int yRotationOffset = -1;
+
 shared_ptr<Player> player;
 
-shared_ptr<Cube> test_cube;
+shared_ptr<LodObject> lodTest;
 
 void display();
 void exitMain();
@@ -32,6 +40,7 @@ void keyPressed(unsigned char key, int x, int y);
 void mouseMoved(int x, int y);
 void mouseDragged(int x, int y);
 void mouseClicked(int button, int state, int x, int y);
+float findSpawnHeight(float x, float z);
 
 int main(int argc, char **argv)
 {
@@ -69,10 +78,23 @@ void init(int width, int height)
 
 	resize(width, height);
 
+	cout << "Start loading\n";
+
 	//Create game object here
 	player = make_shared<Player>();
 
-	test_cube = make_shared<Cube>();
+	lodTest = make_shared<LodObject>();
+	lodTest->m_pos.y = 4;
+
+	//Load Level
+
+	LoadedLevel::loadLevel(Level1::map, Level1::width, Level1::height, Level1::depth);
+
+	//Config spawn
+
+	player->m_pos.y = findSpawnHeight(player->m_pos.x, player->m_pos.z);
+
+	cout << "Finished loading\n";
 }
 
 void display()
@@ -81,12 +103,87 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	//Move player
-	glTranslatef(player->m_pos.x, player->m_pos.y, player->m_pos.z);
-	//TODO Rotate
+	//Rotate Scene
+	glRotatef(player->m_rot.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(player->m_rot.x, 1.0f, 0.0f, 0.0f);
 
-	//Draw objects here
-	test_cube->drawTexture(0,0,0);
+	//Move player
+	glTranslatef(-player->m_pos.x, -player->m_pos.y, -player->m_pos.z);
+
+	//LOD Test
+	float distance = (lodTest->m_pos - player->m_pos).length();
+	cout << "LodDistance: " << distance << "\n";
+	lodTest->draw(distance);
+
+	//Draw level
+
+	Voxel * voxel;
+
+	std::vector<SortingHelper> trasparentSortingVector;
+
+	//Draw opaque objects here
+	//Draw farest z layer first
+	for (uint32_t z = 0; z < LoadedLevel::m_depth; z++) {
+		for (uint32_t y = 0; y < LoadedLevel::m_height; y++) {
+			for (uint32_t x = 0; x < LoadedLevel::m_width; x++) {
+				voxel = LoadedLevel::getVoxel(x, y, z);
+
+				//cout << "X " << x << " Y " << y << " Z " << z << " -> Index: " << XYZ_TO_ARRAY_INDEX(x, y, z, LoadedLevel::m_width, LoadedLevel::m_depth) << " = " << LoadedLevel::m_map[XYZ_TO_ARRAY_INDEX(x, y, z, LoadedLevel::m_width, LoadedLevel::m_depth)] << "\n";
+				//cout << "Size of voxel: " << sizeof(voxel) << "\n";
+
+				if (!voxel->isTransparent()) {
+					voxel->draw(static_cast<float>(x) - LoadedLevel::m_centerOffsetX, y, static_cast<float>(z) - LoadedLevel::m_centerOffsetZ);
+				}
+				else if (voxel->m_type != VoxelType::AIR)
+				{
+					float order = (Vector3f(x,y,z)-Vector3f(player->m_pos.x + LoadedLevel::m_centerOffsetX, player->m_pos.y, player->m_pos.z + LoadedLevel::m_centerOffsetZ)).length();
+					//insert at right pos
+					int i = 0;
+					for (; i < trasparentSortingVector.size(); i++) {
+						if (order < trasparentSortingVector[i].sortingVal) {
+							break;
+						}
+					}
+					SortingHelper elem = { Vector3f(x,y,z), order };
+					trasparentSortingVector.insert(trasparentSortingVector.begin() + i, elem);
+				}
+			}
+		}
+	}
+
+	//cout << "Start transparent\n";
+
+	//Draw transparent objects here
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//Draw farest z layer first
+	while (!trasparentSortingVector.empty())
+	{
+		voxel = LoadedLevel::getVoxel(trasparentSortingVector.back().position);
+		voxel->drawTransparent(trasparentSortingVector.back().position.x - LoadedLevel::m_centerOffsetX, trasparentSortingVector.back().position.y, trasparentSortingVector.back().position.z - LoadedLevel::m_centerOffsetZ);
+			
+		/*
+		switch (voxel->m_type) {
+		case VoxelType::GLASS_GREEN:
+			cout << "Green\n";
+			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
+			break;
+		case VoxelType::GLASS_RED:
+			cout << "Red\n";
+			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
+			break;
+		case VoxelType::GLASS_BLUE:
+			cout << "Blue\n";
+			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
+			break;
+		}
+		*/
+
+		trasparentSortingVector.pop_back();
+	}
+	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
 
 	glutSwapBuffers();
 }
@@ -103,8 +200,8 @@ void hideConsole()
 }
 
 void exitMain() {
-		//Free memory
-		exit(0);
+	//Free memory
+	exit(0);
 }
 
 
@@ -143,31 +240,66 @@ void keyPressed(unsigned char key, int x, int y)
 		exitMain();
 		break;
 	case 'w':
-		player->m_pos.z += player->m_walkingSpeed;
+		player->m_pos.z -= player->getLookingDir().z * player->m_walkingSpeed;
+		player->m_pos.x += player->getLookingDir().x * player->m_walkingSpeed;
 		break;
 	case 's':
-		player->m_pos.z -= player->m_walkingSpeed;
+		player->m_pos.z += player->getLookingDir().z * player->m_walkingSpeed;
+		player->m_pos.x -= player->getLookingDir().x * player->m_walkingSpeed;
 		break;
 	case 'a':
-		player->m_pos.x += player->m_walkingSpeed;
+		player->m_pos.z -= player->getLookingDir().x * player->m_walkingSpeed;
+		player->m_pos.x -= player->getLookingDir().z * player->m_walkingSpeed;
 		break;
 	case 'd':
-		player->m_pos.x -= player->m_walkingSpeed;
+		player->m_pos.z += player->getLookingDir().x * player->m_walkingSpeed;
+		player->m_pos.x += player->getLookingDir().z * player->m_walkingSpeed;
+		break;
+	case 'q':
+		player->m_pos.y -= player->m_walkingSpeed;
+		break;
+	case 'e':
+		player->m_pos.y += player->m_walkingSpeed;
 		break;
 	}
 }
 
 void mouseClicked(int button, int state, int x, int y)
 {
-	cout << "Click: " << button << " " << state  << " " << x  << " " << y << "\n";
+	cout << "Click: " << button << " " << state << " " << x << " " << y << "\n";
 }
 
 void mouseDragged(int x, int y)
 {
+	mouseMoved(x, y);
 	cout << "Drag x: " << x << " y: " << y << "\n";
 }
 
 void mouseMoved(int x, int y)
 {
-	cout << "Move x: " << x << " y: " << y << "\n";
+	if (xRotationOffset == -1) {
+		xRotationOffset = y;
+	}
+
+	if (yRotationOffset == -1) {
+		yRotationOffset = x;
+	}
+
+	//Rotation um y achse mit mouse x value
+	player->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset) * player->m_rotationSpeed) % 360;
+
+	//cout << "Move x: " << x << " y: " << y << "\n";
+}
+
+float findSpawnHeight(float x, float z) {
+	float y = 0;
+	for (y = (LoadedLevel::m_height - 1); y >= 0; y--) {
+		if (LoadedLevel::getVoxelCentered(x, y, z)->m_type != VoxelType::AIR) {
+			break;
+		}
+	}
+
+	cout << "Player start Y pos: " << (y + 1) << "\n";
+
+	return y + 1;
 }

@@ -3,7 +3,9 @@
 Cube::Cube()
 {
 	//Reset all render sides to true
-	memset(&m_renderedSides, 0xff, sizeof(m_renderedSides));
+	memset(&m_settings, 0xff, sizeof(m_settings));
+	m_settings.glow = false;
+	m_settings.transparent = false;
 }
 
 Cube::~Cube()
@@ -11,62 +13,57 @@ Cube::~Cube()
 }
 
 void Cube::createMesh() {
-	drawCube();
-}
-
-GLuint Cube::getTexture()
-{
-	return TextureManager::getTexture(0);
+	createCubeMesh();
 }
 
 bool Cube::isTopRendered() {
-	return m_renderedSides.top;
+	return m_settings.top;
 }
 
 bool Cube::isBottomRendered() {
-	return m_renderedSides.bottom;
+	return m_settings.bottom;
 }
 
 bool Cube::isLeftRendered() {
-	return m_renderedSides.left;
+	return m_settings.left;
 }
 
 bool Cube::isRightRendered() {
-	return m_renderedSides.right;
+	return m_settings.right;
 }
 
 bool Cube::isFrontRendered() {
-	return m_renderedSides.front;
+	return m_settings.front;
 }
 
 bool Cube::isBackRendered() {
-	return m_renderedSides.back;
+	return m_settings.back;
 }
 
 void Cube::setTopRendered(bool b) {
-	m_renderedSides.top = b;
+	m_settings.top = b;
 }
 void Cube::setBottomRendered(bool b) {
-	m_renderedSides.bottom = b;
+	m_settings.bottom = b;
 }
 
 void Cube::setLeftRendered(bool b) {
-	m_renderedSides.left = b;
+	m_settings.left = b;
 }
 
 void Cube::setRightRendered(bool b) {
-	m_renderedSides.right = b;
+	m_settings.right = b;
 }
 
 void Cube::setFrontRendered(bool b) {
-	m_renderedSides.front = b;
+	m_settings.front = b;
 }
 
 void Cube::setBackRendered(bool b) {
-	m_renderedSides.back = b;
+	m_settings.back = b;
 }
 
-void Cube::drawCube()
+void Cube::createCubeMesh()
 {
 	glBegin(GL_QUADS);
 
@@ -143,4 +140,14 @@ void Cube::drawCube()
 	}
 
 	glEnd();
+}
+
+bool Cube::isTransparent()
+{
+	return m_settings.transparent;
+}
+
+bool Cube::isGlowing()
+{
+	return m_settings.glow;
 }

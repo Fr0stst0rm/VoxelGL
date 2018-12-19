@@ -3,12 +3,14 @@
 #ifndef LEVEL_1_H
 #define LEVEL_1_H
 
-struct  Level1 {
-	static const char width = 10;
-	static const char height = 10;
-	static const char depth = 10;
+#include <stdint.h>
 
-	static char map[];
+struct  Level1 {
+	static const char width = 11;// 10;
+	static const char depth = 11;// 10;
+	static const char height = 2;// 10;
+
+	static uint8_t map[];
 };
 
 #endif // !LEVEL_1_H

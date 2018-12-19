@@ -4,7 +4,6 @@
 
 #include "Object3d.h"
 #include "Defines.h"
-#include "VoxelTypes.h" //TODO del after voxel class is created
 
 enum Side {
 	top = 0,
@@ -16,14 +15,12 @@ enum Side {
 };
 
 struct RenderedSettings {
-	uint8_t top : 1, bottom : 1, left : 1, right : 1, front : 1, back : 1, glow : 1;
+	uint8_t top : 1, bottom : 1, left : 1, right : 1, front : 1, back : 1, glow : 1, transparent : 1;
 };
 
 class Cube : public Object3D
 {
-public:
-	Cube();
-	//Cube(float size);
+public:	
 	~Cube();
 
 	// Cube sides to be rendered
@@ -40,20 +37,24 @@ public:
 	void setRightRendered(bool b);
 	void setFrontRendered(bool b);
 	void setBackRendered(bool b);
+
+	bool isTransparent();
+	bool isGlowing();
 	
 
 protected:
 
+	Cube();
+	//Cube(float size);
+
 	void createMesh();
 
-	virtual GLuint getTexture();
+	RenderedSettings m_settings;
 
 private:
-	void drawCube();
 
-	uint16_t cubeID;
-
-	RenderedSettings m_renderedSides;
+	void createCubeMesh();
+	
 
 };
 

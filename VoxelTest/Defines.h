@@ -1,7 +1,6 @@
-#pragma once
-#ifndef _DEFINES_H
 
-#define _DEFINES_H
+#ifndef DEFINES_H
+#define DEFINES_H
 
 #include <Windows.h>
 #include <memory>
@@ -15,4 +14,13 @@
 
 #include "Logger.h"
 
-#endif // !_DEFINES_H
+#define XYZ_TO_ARRAY_INDEX(X,Y,Z, WIDTH, DEPTH) (((X) + ((Z) * (WIDTH))) + ((y) * (WIDTH) * (DEPTH)))
+
+struct RGBA {
+	float red = 1;
+	float green = 1;
+	float blue = 1;
+	float alpha = 1;
+};
+
+#endif // !DEFINES_H

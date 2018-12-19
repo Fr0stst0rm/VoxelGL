@@ -55,7 +55,7 @@ void tgaLoadHeader(FILE *file, tgaInfo *info) {
 	fread(&cGarbage, sizeof(unsigned char), 1, file);
 	fread(&cGarbage, sizeof(unsigned char), 1, file);
 
-	// type must be 2 or 3
+	// m_type must be 2 or 3
 	fread(&info->type, sizeof(unsigned char), 1, file);
 
 	fread(&iGarbage, sizeof(short int), 1, file);
@@ -226,7 +226,7 @@ void tgaRGBtoGreyscale(tgaInfo *info) {
 	//free old image data
 	free(info->imageData);
 
-	// reassign pixelDepth and type according to the new image type
+	// reassign pixelDepth and m_type according to the new image m_type
 	info->pixelDepth = 8;
 	info->type = 3;
 	// reassing imageData to the new array.
@@ -266,7 +266,7 @@ int tgaSave(char            *filename,
 		return(TGA_ERROR_FILE_OPEN);
 	}
 
-	// compute image type: 2 for RGB(A), 3 for greyscale
+	// compute image m_type: 2 for RGB(A), 3 for greyscale
 	mode = pixelDepth / 8;
 	if ((pixelDepth == 24) || (pixelDepth == 32))
 		type = 2;
