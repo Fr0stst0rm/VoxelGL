@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
 	init(win_width, win_height);
 	glutTimerFunc(15, timer, 1);
-	//glutFullScreen();
+	glutFullScreen();
 	glutMainLoop();
 	exitMain();
 	return 0;
