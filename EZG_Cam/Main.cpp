@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Defines.h"
+#include "Input.h"
 
 #include "Player.h"
 
@@ -14,6 +15,7 @@
 #include "Level1.h"
 
 #include "LodObject.h"
+#include "Spline.h"
 
 using namespace std;
 
@@ -24,10 +26,15 @@ int const win_height = 1080;
 
 int xRotationOffset = -1;
 int yRotationOffset = -1;
+int zRotationOffset = -1;
 
-shared_ptr<Player> player;
+//Setup input flags
+KeyPressedFlags keyFlags;
 
-shared_ptr<LodObject> lodTest;
+shared_ptr<Player> playerCam;
+shared_ptr<Spline> camSpline;
+
+//shared_ptr<LodObject> lodTest;
 
 void display();
 void exitMain();
@@ -35,14 +42,18 @@ void hideConsole();
 void timer(int value);
 void init(int width, int height);
 void resize(int width, int height);
+void checkInput();
 void specialKeyPressed(int key, int x, int y);
 void keyPressed(unsigned char key, int x, int y);
+void specialKeyUp(int key, int x, int y);
+void keyUp(unsigned char key, int x, int y);
 void mouseMoved(int x, int y);
 void mouseDragged(int x, int y);
 void mouseClicked(int button, int state, int x, int y);
+void setCam(Vector3f pos, Vector3f rot);
 float findSpawnHeight(float x, float z);
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	//hideConsole();
 
@@ -54,9 +65,14 @@ int main(int argc, char **argv)
 
 	glutDisplayFunc(&display);
 	glutReshapeFunc(&resize);
+
+	// Change to key check in display func
 	glutKeyboardFunc(&keyPressed);
+	glutKeyboardUpFunc(&keyUp);
 	glutSpecialFunc(&specialKeyPressed);
+	glutSpecialUpFunc(&specialKeyUp);
 	glutMouseFunc(&mouseClicked);
+
 	glutMotionFunc(&mouseDragged);
 	glutPassiveMotionFunc(&mouseMoved);
 
@@ -81,10 +97,13 @@ void init(int width, int height)
 	cout << "Start loading\n";
 
 	//Create game object here
-	player = make_shared<Player>();
+	playerCam = make_shared<Player>();
 
-	lodTest = make_shared<LodObject>();
-	lodTest->m_pos.y = 4;
+	//lodTest = make_shared<LodObject>();
+	//lodTest->m_pos.y = 4;
+
+	camSpline = make_shared<Spline>();
+	//camSpline->
 
 	//Load Level
 
@@ -92,32 +111,38 @@ void init(int width, int height)
 
 	//Config spawn
 
-	player->m_pos.y = findSpawnHeight(player->m_pos.x, player->m_pos.z);
+	playerCam->m_pos.y = findSpawnHeight(playerCam->m_pos.x, playerCam->m_pos.z);
+	playerCam->m_walkingSpeed = 0.2f;
 
 	cout << "Finished loading\n";
 }
 
 void display()
 {
+	// Input
+	checkInput();
 
+	// Graphics
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	//Rotate Scene
-	glRotatef(player->m_rot.y, 0.0f, 1.0f, 0.0f);
-	glRotatef(player->m_rot.x, 1.0f, 0.0f, 0.0f);
-
-	//Move player
-	glTranslatef(-player->m_pos.x, -player->m_pos.y, -player->m_pos.z);
+	setCam(playerCam->m_pos, playerCam->m_rot);
 
 	//LOD Test
-	float distance = (lodTest->m_pos - player->m_pos).length();
-	cout << "LodDistance: " << distance << "\n";
-	lodTest->draw(distance);
+	//float distance = (lodTest->m_pos - player->m_pos).length();
+	//cout << "LodDistance: " << distance << "\n";
+	//lodTest->draw(distance);
+
+	//Draw Spline
+	camSpline->setLineWidth(5.0f);
+	camSpline->setColor(1, 0, 0, 1);
+	camSpline->drawSpline();
+
 
 	//Draw level
 
-	Voxel * voxel;
+
+	Voxel* voxel;
 
 	std::vector<SortingHelper> trasparentSortingVector;
 
@@ -136,7 +161,7 @@ void display()
 				}
 				else if (voxel->m_type != VoxelType::AIR)
 				{
-					float order = (Vector3f(x,y,z)-Vector3f(player->m_pos.x + LoadedLevel::m_centerOffsetX, player->m_pos.y, player->m_pos.z + LoadedLevel::m_centerOffsetZ)).length();
+					float order = (Vector3f(x, y, z) - Vector3f(playerCam->m_pos.x + LoadedLevel::m_centerOffsetX, playerCam->m_pos.y, playerCam->m_pos.z + LoadedLevel::m_centerOffsetZ)).length();
 					//insert at right pos
 					int i = 0;
 					for (; i < trasparentSortingVector.size(); i++) {
@@ -153,6 +178,7 @@ void display()
 
 	//cout << "Start transparent\n";
 
+
 	//Draw transparent objects here
 	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
@@ -162,26 +188,11 @@ void display()
 	{
 		voxel = LoadedLevel::getVoxel(trasparentSortingVector.back().position);
 		voxel->drawTransparent(trasparentSortingVector.back().position.x - LoadedLevel::m_centerOffsetX, trasparentSortingVector.back().position.y, trasparentSortingVector.back().position.z - LoadedLevel::m_centerOffsetZ);
-			
-		/*
-		switch (voxel->m_type) {
-		case VoxelType::GLASS_GREEN:
-			cout << "Green\n";
-			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
-			break;
-		case VoxelType::GLASS_RED:
-			cout << "Red\n";
-			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
-			break;
-		case VoxelType::GLASS_BLUE:
-			cout << "Blue\n";
-			cout << "Order: " << trasparentSortingVector.back().sortingVal << "\n";
-			break;
-		}
-		*/
 
 		trasparentSortingVector.pop_back();
 	}
+
+
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
 
@@ -218,17 +229,57 @@ void resize(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void checkInput() {
+
+	if (keyFlags.esc) {
+		exitMain();
+	}
+	if (keyFlags.w || keyFlags.up) {
+		playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+		playerCam->m_pos.x += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.s || keyFlags.down) {
+		playerCam->m_pos.z += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+		playerCam->m_pos.x -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.a || keyFlags.left) {
+		playerCam->m_pos.z -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+		playerCam->m_pos.x -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.d || keyFlags.right) {
+		playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+		playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.q) {
+		playerCam->m_pos.y -= playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.e) {
+		playerCam->m_pos.y += playerCam->m_walkingSpeed;
+	}
+	if (keyFlags.c) {
+		camSpline->clearSplinePoints();
+	}
+	if (keyFlags.space) {
+		camSpline->addSplinePoint(playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z);
+	}
+
+}
+
 void specialKeyPressed(int key, int x, int y)
 {
 	switch (key)
 	{
 	case GLUT_KEY_UP:
+		keyFlags.up = true;
 		break;
 	case GLUT_KEY_DOWN:
+		keyFlags.down = true;
 		break;
 	case GLUT_KEY_LEFT:
+		keyFlags.left = true;
 		break;
 	case GLUT_KEY_RIGHT:
+		keyFlags.right = true;
 		break;
 	}
 }
@@ -237,29 +288,80 @@ void keyPressed(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 27:
-		exitMain();
+		keyFlags.esc = true;
 		break;
 	case 'w':
-		player->m_pos.z -= player->getLookingDir().z * player->m_walkingSpeed;
-		player->m_pos.x += player->getLookingDir().x * player->m_walkingSpeed;
+		keyFlags.w = true;
 		break;
 	case 's':
-		player->m_pos.z += player->getLookingDir().z * player->m_walkingSpeed;
-		player->m_pos.x -= player->getLookingDir().x * player->m_walkingSpeed;
+		keyFlags.s = true;
 		break;
 	case 'a':
-		player->m_pos.z -= player->getLookingDir().x * player->m_walkingSpeed;
-		player->m_pos.x -= player->getLookingDir().z * player->m_walkingSpeed;
+		keyFlags.a = true;
 		break;
 	case 'd':
-		player->m_pos.z += player->getLookingDir().x * player->m_walkingSpeed;
-		player->m_pos.x += player->getLookingDir().z * player->m_walkingSpeed;
+		keyFlags.d = true;
 		break;
 	case 'q':
-		player->m_pos.y -= player->m_walkingSpeed;
+		keyFlags.q = true;
 		break;
 	case 'e':
-		player->m_pos.y += player->m_walkingSpeed;
+		keyFlags.e = true;
+		break;
+	case 'c':
+		keyFlags.c = true;
+		break;
+	case ' ':
+		keyFlags.space = true;
+		break;
+	}
+}
+void specialKeyUp(int key, int x, int y) {
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		keyFlags.up = false;
+		break;
+	case GLUT_KEY_DOWN:
+		keyFlags.down = false;
+		break;
+	case GLUT_KEY_LEFT:
+		keyFlags.left = false;
+		break;
+	case GLUT_KEY_RIGHT:
+		keyFlags.right = false;
+		break;
+	}
+}
+
+void keyUp(unsigned char key, int x, int y) {
+	switch (key) {
+	case 27:
+		keyFlags.esc = false;
+		break;
+	case 'w':
+		keyFlags.w = false;
+		break;
+	case 's':
+		keyFlags.s = false;
+		break;
+	case 'a':
+		keyFlags.a = false;
+		break;
+	case 'd':
+		keyFlags.d = false;
+		break;
+	case 'q':
+		keyFlags.q = false;
+		break;
+	case 'e':
+		keyFlags.e = false;
+		break;
+	case 'c':
+		keyFlags.c = false;
+		break;
+	case ' ':
+		keyFlags.space = false;
 		break;
 	}
 }
@@ -277,18 +379,42 @@ void mouseDragged(int x, int y)
 
 void mouseMoved(int x, int y)
 {
-	if (xRotationOffset == -1) {
-		xRotationOffset = y;
-	}
 
 	if (yRotationOffset == -1) {
 		yRotationOffset = x;
 	}
 
+
+	if (xRotationOffset == -1) {
+		xRotationOffset = y;
+	}
+	if (zRotationOffset == -1) {
+		zRotationOffset = y;
+	}
+
+
 	//Rotation um y achse mit mouse x value
-	player->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset) * player->m_rotationSpeed) % 360;
+
+	playerCam->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset) * playerCam->m_rotationSpeed) % 360;
+	//cout << "y Rot: " << (player->m_rot.y - 180) << "\n";
+
+	//Rotation um x & z achse mit mouse y value
+	//TODO rotation um y achse berücksichtigen
+	playerCam->m_rot.x = static_cast<int>(static_cast<float>(y - xRotationOffset) * playerCam->m_rotationSpeed) % 360;
+	//player->m_rot.z = static_cast<int>(static_cast<float>(y - zRotationOffset) * player->m_rotationSpeed) % 360;
 
 	//cout << "Move x: " << x << " y: " << y << "\n";
+}
+
+void setCam(Vector3f pos, Vector3f rot) {
+
+	//Rotate Scene
+
+	glRotatef(rot.x, 1.0f, 0.0f, 0.0f); //1. Pitch
+	glRotatef(rot.y, 0.0f, 1.0f, 0.0f); //2. Yaw
+
+	//Move player
+	glTranslatef(-pos.x, -pos.y, -pos.z);
 }
 
 float findSpawnHeight(float x, float z) {

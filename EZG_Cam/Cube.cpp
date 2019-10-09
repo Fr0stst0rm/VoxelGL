@@ -65,6 +65,8 @@ void Cube::setBackRendered(bool b) {
 
 void Cube::createCubeMesh()
 {
+	glScalef(0.9999, 0.9999, 0.9999);
+
 	glBegin(GL_QUADS);
 
 	if (isFrontRendered()) {
@@ -140,6 +142,9 @@ void Cube::createCubeMesh()
 	}
 
 	glEnd();
+	
+	
+
 }
 
 bool Cube::isTransparent()
