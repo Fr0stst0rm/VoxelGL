@@ -29,6 +29,7 @@ void Spline::addSplinePoint(float x, float y, float z)
 void Spline::addSplinePoint(Point p)
 {
 	m_SplinePoints->push_back(p);
+	cout << "Points " << m_SplinePoints->size() << "\n";
 }
 
 void Spline::clearSplinePoints()

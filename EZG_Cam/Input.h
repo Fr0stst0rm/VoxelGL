@@ -1,7 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-struct KeyPressedFlags
+struct KeyFlags
 {
 	bool w : 1;
 	bool a : 1;
@@ -10,6 +10,7 @@ struct KeyPressedFlags
 	bool q : 1;
 	bool e : 1;
 	bool c : 1;
+	bool l : 1;
 	bool space : 1;
 	bool esc : 1;
 	bool up : 1;
@@ -17,5 +18,11 @@ struct KeyPressedFlags
 	bool left : 1;
 	bool right : 1;
 };
+
+extern KeyFlags keyPressedFlags;
+extern KeyFlags keyChangedFlags;
+extern KeyFlags lastKeyState;
+
+void updateInput();
 
 #endif // !INPUT_H

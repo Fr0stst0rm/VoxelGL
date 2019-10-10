@@ -28,9 +28,6 @@ int xRotationOffset = -1;
 int yRotationOffset = -1;
 int zRotationOffset = -1;
 
-//Setup input flags
-KeyPressedFlags keyFlags;
-
 shared_ptr<Player> playerCam;
 shared_ptr<Spline> camSpline;
 
@@ -66,7 +63,6 @@ int main(int argc, char** argv)
 	glutDisplayFunc(&display);
 	glutReshapeFunc(&resize);
 
-	// Change to key check in display func
 	glutKeyboardFunc(&keyPressed);
 	glutKeyboardUpFunc(&keyUp);
 	glutSpecialFunc(&specialKeyPressed);
@@ -78,7 +74,7 @@ int main(int argc, char** argv)
 
 	init(win_width, win_height);
 	glutTimerFunc(15, timer, 1);
-	glutFullScreen();
+	//glutFullScreen();
 	glutMainLoop();
 	exitMain();
 	return 0;
@@ -103,6 +99,9 @@ void init(int width, int height)
 	//lodTest->m_pos.y = 4;
 
 	camSpline = make_shared<Spline>();
+	camSpline->setLineWidth(5.0f);
+	camSpline->setColor(1, 0, 0, 1);
+
 	//camSpline->
 
 	//Load Level
@@ -120,6 +119,7 @@ void init(int width, int height)
 void display()
 {
 	// Input
+	updateInput();
 	checkInput();
 
 	// Graphics
@@ -134,8 +134,6 @@ void display()
 	//lodTest->draw(distance);
 
 	//Draw Spline
-	camSpline->setLineWidth(5.0f);
-	camSpline->setColor(1, 0, 0, 1);
 	camSpline->drawSpline();
 
 
@@ -231,35 +229,35 @@ void resize(int width, int height)
 
 void checkInput() {
 
-	if (keyFlags.esc) {
+	if (keyPressedFlags.esc) {
 		exitMain();
 	}
-	if (keyFlags.w || keyFlags.up) {
+	if (keyPressedFlags.w || keyPressedFlags.up) {
 		playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
 		playerCam->m_pos.x += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.s || keyFlags.down) {
+	if (keyPressedFlags.s || keyPressedFlags.down) {
 		playerCam->m_pos.z += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
 		playerCam->m_pos.x -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.a || keyFlags.left) {
+	if (keyPressedFlags.a || keyPressedFlags.left) {
 		playerCam->m_pos.z -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
 		playerCam->m_pos.x -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.d || keyFlags.right) {
+	if (keyPressedFlags.d || keyPressedFlags.right) {
 		playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
 		playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.q) {
+	if (keyPressedFlags.q) {
 		playerCam->m_pos.y -= playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.e) {
+	if (keyPressedFlags.e) {
 		playerCam->m_pos.y += playerCam->m_walkingSpeed;
 	}
-	if (keyFlags.c) {
+	if (keyPressedFlags.c && keyChangedFlags.c) {
 		camSpline->clearSplinePoints();
 	}
-	if (keyFlags.space) {
+	if (keyPressedFlags.space && keyChangedFlags.space) {
 		camSpline->addSplinePoint(playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z);
 	}
 
@@ -270,16 +268,16 @@ void specialKeyPressed(int key, int x, int y)
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		keyFlags.up = true;
+		keyPressedFlags.up = true;
 		break;
 	case GLUT_KEY_DOWN:
-		keyFlags.down = true;
+		keyPressedFlags.down = true;
 		break;
 	case GLUT_KEY_LEFT:
-		keyFlags.left = true;
+		keyPressedFlags.left = true;
 		break;
 	case GLUT_KEY_RIGHT:
-		keyFlags.right = true;
+		keyPressedFlags.right = true;
 		break;
 	}
 }
@@ -288,31 +286,34 @@ void keyPressed(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 27:
-		keyFlags.esc = true;
+		keyPressedFlags.esc = true;
 		break;
 	case 'w':
-		keyFlags.w = true;
+		keyPressedFlags.w = true;
 		break;
 	case 's':
-		keyFlags.s = true;
+		keyPressedFlags.s = true;
 		break;
 	case 'a':
-		keyFlags.a = true;
+		keyPressedFlags.a = true;
 		break;
 	case 'd':
-		keyFlags.d = true;
+		keyPressedFlags.d = true;
 		break;
 	case 'q':
-		keyFlags.q = true;
+		keyPressedFlags.q = true;
 		break;
 	case 'e':
-		keyFlags.e = true;
+		keyPressedFlags.e = true;
+		break;
+	case 'l':
+		keyPressedFlags.l = true;
 		break;
 	case 'c':
-		keyFlags.c = true;
+		keyPressedFlags.c = true;
 		break;
 	case ' ':
-		keyFlags.space = true;
+		keyPressedFlags.space = true;
 		break;
 	}
 }
@@ -320,16 +321,16 @@ void specialKeyUp(int key, int x, int y) {
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		keyFlags.up = false;
+		keyPressedFlags.space = false;
 		break;
 	case GLUT_KEY_DOWN:
-		keyFlags.down = false;
+		keyPressedFlags.down = false;
 		break;
 	case GLUT_KEY_LEFT:
-		keyFlags.left = false;
+		keyPressedFlags.left = false;
 		break;
 	case GLUT_KEY_RIGHT:
-		keyFlags.right = false;
+		keyPressedFlags.right = false;
 		break;
 	}
 }
@@ -337,31 +338,34 @@ void specialKeyUp(int key, int x, int y) {
 void keyUp(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
-		keyFlags.esc = false;
+		keyPressedFlags.esc = false;
 		break;
 	case 'w':
-		keyFlags.w = false;
+		keyPressedFlags.w = false;
 		break;
 	case 's':
-		keyFlags.s = false;
+		keyPressedFlags.s = false;
 		break;
 	case 'a':
-		keyFlags.a = false;
+		keyPressedFlags.a = false;
 		break;
 	case 'd':
-		keyFlags.d = false;
+		keyPressedFlags.d = false;
 		break;
 	case 'q':
-		keyFlags.q = false;
+		keyPressedFlags.q = false;
 		break;
 	case 'e':
-		keyFlags.e = false;
+		keyPressedFlags.e = false;
+		break;
+	case 'l':
+		keyPressedFlags.e = false;
 		break;
 	case 'c':
-		keyFlags.c = false;
+		keyPressedFlags.c = false;
 		break;
 	case ' ':
-		keyFlags.space = false;
+		keyPressedFlags.space = false;
 		break;
 	}
 }
