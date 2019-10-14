@@ -46,6 +46,8 @@ public:
 	float distance(Vector3f other);
 };
 
-Vector3f QuatToDegrees(glm::quat);
+Vector3f QuatToEuler(glm::quat);
+
+glm::quat EulerToQuat(Vector3f rot);
 
 #endif // !VECTOR3F_H

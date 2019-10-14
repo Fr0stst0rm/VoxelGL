@@ -18,8 +18,6 @@
 #include "LodObject.h"
 #include "Spline.h"
 
-#include "KittyMullRom.h"
-
 using namespace std;
 
 int window;
@@ -149,7 +147,7 @@ void display()
 
 		glm::quat test = camSpline->getCameraRotationAtTime(flyOnSplineTime * playerCam->m_walkingSpeed);
 
-		Vector3f v3 = QuatToDegrees(test);
+		Vector3f v3 = QuatToEuler(test);
 		playerCam->m_rot = v3;
 
 		//cout << "x " << test.x << "y " << test.y << "z " << test.z << "w " << test.w << "\n";

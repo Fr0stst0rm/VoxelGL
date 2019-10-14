@@ -93,7 +93,7 @@ Vector3f operator*(const Vector3f& vec3f, float scalar)
 	return scalar * vec3f;
 }
 
-Vector3f QuatToDegrees(glm::quat q)
+Vector3f QuatToEuler(glm::quat q)
 {
 	Vector3f angles;
 
@@ -119,4 +119,24 @@ Vector3f QuatToDegrees(glm::quat q)
 	angles.z = glm::degrees(angles.z);
 
 	return angles;
+}
+
+glm::quat EulerToQuat(Vector3f rot)
+{
+	rot = Vector3f(glm::radians(rot.x), glm::radians(rot.y), glm::radians(rot.z));
+	// Abbreviations for the various angular functions
+	const double cy = cos(rot.z * 0.5);
+	const double sy = sin(rot.z * 0.5);
+	const double cp = cos(rot.y * 0.5);
+	const double sp = sin(rot.y * 0.5);
+	const double cr = cos(rot.x * 0.5);
+	const double sr = sin(rot.x * 0.5);
+
+	glm::quat q;
+	q.w = cy * cp * cr + sy * sp * sr;
+	q.x = cy * cp * sr - sy * sp * cr;
+	q.y = sy * cp * sr + cy * sp * cr;
+	q.z = sy * cp * cr - cy * sp * sr;
+
+	return q;
 }

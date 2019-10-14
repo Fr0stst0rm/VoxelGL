@@ -8,39 +8,40 @@ Spline::Spline() : m_Spline(true)
 	m_CamRot = new std::vector<glm::vec3>;
 	m_CamRotQuat = new std::vector<glm::quat>;
 
-	addPoint({ 0.0f, 2.0f, 4.0f });
-	addPoint({ 0.0f, 2.0f, 3.0f });
-	addPoint({ 0.0f, 2.0f, 2.0f });
-	addPoint({ 0.0f, 2.0f, 1.0f });
-	addPoint({ 0.0f, 2.0f, 0.0f });
-
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(glm::radians(10.0f), 0.0f, glm::radians(10.0f))));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(glm::radians(20.0f), 0.0f, glm::radians(100.0f))));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(glm::radians(30.0f), 0.0f, glm::radians(190.0f))));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(glm::radians(40.0f), 0.0f, glm::radians(280.0f))));
-
 	/*
-	addPoint({ 0.0f, 2.0f, 4.0f });
-	addPoint({ 0.5f, 2.5f, 3.0f });
-	addPoint({ 0.0f, 3.0f, 2.0f });
-	addPoint({ -0.5f, 3.5f, 1.0f });
-	addPoint({ 0.0f, 4.0f, 0.0f });
-	addPoint({ 0.5f, 4.5f, -1.0f });
-	addPoint({ 0.0f, 5.0f, -2.0f });
-	addPoint({ -0.5f, 5.5f, -3.0f });
-	addPoint({ 0.0f, 6.0f, -4.0f });
-	addPoint({ 0.5f, 6.5f, -5.0f });
-	addPoint({ 0.0f, 7.0f, -6.0f });
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 4.0f });
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 3.0f });
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 2.0f });
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 1.0f });
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 0.0f });
 
-	addPoint({ 2.5f, 6.0f, -2.5f });
-	addPoint({ 5.0f, 5.0f, -1.0f });
-	addPoint({ 5.0f, 6.0f, -0.0f });
-	addPoint({ 5.0f, 5.0f, 1.0f });
-	addPoint({ 5.0f, 6.0f, 2.0f });
-	addPoint({ 5.0f, 5.0f, 3.0f });
-	addPoint({ 5.0f, 6.0f, 4.0f });
-	addPoint({ 5.0f, 5.0f, 5.0f });
-	addPoint({ 5.0f, 6.0f, 6.0f });
+	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0, 0.0f)));
+	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0, 0.0f)));
+	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, M_PI_2, 0.0f)));
+	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, M_PI_2, 0.0f)));
+	*/
+	
+	m_ControlPoints->push_back({ 0.0f, 2.0f, 4.0f });
+	m_ControlPoints->push_back({ 0.5f, 2.5f, 3.0f });
+	m_ControlPoints->push_back({ 0.0f, 3.0f, 2.0f });
+	m_ControlPoints->push_back({ -0.5f, 3.5f, 1.0f });
+	m_ControlPoints->push_back({ 0.0f, 4.0f, 0.0f });
+	m_ControlPoints->push_back({ 0.5f, 4.5f, -1.0f });
+	m_ControlPoints->push_back({ 0.0f, 5.0f, -2.0f });
+	m_ControlPoints->push_back({ -0.5f, 5.5f, -3.0f });
+	m_ControlPoints->push_back({ 0.0f, 6.0f, -4.0f });
+	m_ControlPoints->push_back({ 0.5f, 6.5f, -5.0f });
+	m_ControlPoints->push_back({ 0.0f, 7.0f, -6.0f });
+
+	m_ControlPoints->push_back({ 2.5f, 6.0f, -2.5f });
+	m_ControlPoints->push_back({ 5.0f, 5.0f, -1.0f });
+	m_ControlPoints->push_back({ 5.0f, 6.0f, -0.0f });
+	m_ControlPoints->push_back({ 5.0f, 5.0f, 1.0f });
+	m_ControlPoints->push_back({ 5.0f, 6.0f, 2.0f });
+	m_ControlPoints->push_back({ 5.0f, 5.0f, 3.0f });
+	m_ControlPoints->push_back({ 5.0f, 6.0f, 4.0f });
+	m_ControlPoints->push_back({ 5.0f, 5.0f, 5.0f });
+	m_ControlPoints->push_back({ 5.0f, 6.0f, 6.0f });
 
 	m_CamRot->push_back(glm::vec3(0.0f, 0.0f, 5.0f));
 	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
@@ -101,7 +102,6 @@ Spline::Spline() : m_Spline(true)
 
 	m_CamRot->push_back(glm::vec3(2.0f, 0.0f, -24.0f));
 	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 1.3f, 0.0f)));
-	*/
 
 	recalcSpline();
 }
@@ -160,7 +160,7 @@ void Spline::addPoint(Point p, Vector3f r)
 	m_ControlPoints->push_back(p);
 	cout << "Points " << m_ControlPoints->size() << "\n";
 
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(r.x, r.y, r.z)));
+	m_CamRotQuat->push_back(EulerToQuat(r));
 
 	//TODO Remove
 	recalcSpline();
@@ -403,16 +403,20 @@ glm::quat Spline::getCameraRotationAtTime(float time) {
 	//float ratio = (cameraDistanceTravelled - distanceToPoint[i - 1]) / (distanceToPoint[i] - distanceToPoint[i - 1]);
 
 
-	return squad(q0, q1, q2, q3, t);
-	//return glm::slerp(q1, q2, t);
+	//return this->squad(q0, q1, q2, q3, t);
+	return glm::slerp(q1, q2, t);
 }
 
 glm::quat Spline::squad(glm::quat q0, glm::quat q1, glm::quat q2, glm::quat q3, float t)
 {
-	glm::quat conj = glm::conjugate(q1);
-	glm::quat a = q1 * glm::exp(-(glm::log(conj * q2) + glm::log(conj * q0)) * 0.25f);
-	conj = glm::conjugate(q2);
-	glm::quat b = q2 * glm::exp(-(glm::log(conj * q3) + glm::log(conj * q1)) * 0.25f);
+	//glm::quat conj = glm::conjugate(q1);
+	//glm::quat a = q1 * glm::exp(-(glm::log(conj * q2) + glm::log(conj * q0)) * 0.25f);
+	//conj = glm::conjugate(q2);
+	//glm::quat b = q2 * glm::exp(-(glm::log(conj * q3) + glm::log(conj * q1)) * 0.25f);
 
-	return slerp(slerp(q1, q2, t), slerp(a, b, t), 2 * t * (1 - t));
+	const glm::quat a = glm::intermediate(q0, q1, q2); //return exp((log(next * invQuat) + log(prev * invQuat)) / T(-4)) * curr;
+	const glm::quat b = glm::intermediate(q1, q2, q3);
+	
+	return glm::squad(q1,q2,a,b,t);
+	//return slerp(slerp(q1, q2, t), slerp(a, b, t), 2 * t * (1 - t));
 }
