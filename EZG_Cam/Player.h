@@ -15,8 +15,9 @@ public:
 
 	Vector3f m_pos;
 	Vector3f m_rot;
+	glm::quat m_keyRot;
 
-	float m_walkingSpeed = 0.05f;
+	float m_walkingSpeed = 1.0f;
 	float m_rotationSpeed = 0.5f;
 
 	Vector3f getLookingDir();

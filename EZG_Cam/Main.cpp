@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 #include "Defines.h"
 #include "Input.h"
@@ -17,6 +18,8 @@
 #include "LodObject.h"
 #include "Spline.h"
 
+#include "KittyMullRom.h"
+
 using namespace std;
 
 int window;
@@ -24,11 +27,19 @@ int window;
 int const win_width = 1920;
 int const win_height = 1080;
 
+long lastTime;
+float deltaTime;
+
+
 int xRotationOffset = -1;
 int yRotationOffset = -1;
 int zRotationOffset = -1;
 
 shared_ptr<Player> playerCam;
+glm::quat camera_quat;
+
+float flyOnSplineTime = -1;
+long startTime;
 shared_ptr<Spline> camSpline;
 
 //shared_ptr<LodObject> lodTest;
@@ -47,7 +58,7 @@ void keyUp(unsigned char key, int x, int y);
 void mouseMoved(int x, int y);
 void mouseDragged(int x, int y);
 void mouseClicked(int button, int state, int x, int y);
-void setCam(Vector3f pos, Vector3f rot);
+void updateCam(Vector3f pos, Vector3f rot);
 float findSpawnHeight(float x, float z);
 
 int main(int argc, char** argv)
@@ -110,14 +121,20 @@ void init(int width, int height)
 
 	//Config spawn
 
+	playerCam->m_pos.z = 5.0f;
 	playerCam->m_pos.y = findSpawnHeight(playerCam->m_pos.x, playerCam->m_pos.z);
-	playerCam->m_walkingSpeed = 0.2f;
+	playerCam->m_walkingSpeed = 5.0f;
 
 	cout << "Finished loading\n";
+	lastTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
 void display()
 {
+	//Get delta time
+	deltaTime = float(glutGet(GLUT_ELAPSED_TIME) - lastTime) / 1000.0f;
+	lastTime = glutGet(GLUT_ELAPSED_TIME); // Milli sec
+
 	// Input
 	updateInput();
 	checkInput();
@@ -126,7 +143,28 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	setCam(playerCam->m_pos, playerCam->m_rot);
+	if (flyOnSplineTime >= 0) {
+
+		playerCam->m_pos = camSpline->getByTime(flyOnSplineTime * playerCam->m_walkingSpeed);
+
+		glm::quat test = camSpline->getCameraRotationAtTime(flyOnSplineTime * playerCam->m_walkingSpeed);
+
+		Vector3f v3 = QuatToDegrees(test);
+		playerCam->m_rot = v3;
+
+		//cout << "x " << test.x << "y " << test.y << "z " << test.z << "w " << test.w << "\n";
+		cout << "x: " << v3.x << " y: " << v3.y << " z: " << v3.z << "\n";
+
+		flyOnSplineTime += deltaTime;
+
+		if ((flyOnSplineTime * playerCam->m_walkingSpeed) > camSpline->getLineLength()) {
+			flyOnSplineTime = -1;
+			cout << "Spline finished: " << (float(glutGet(GLUT_ELAPSED_TIME) - startTime) / 1000.0f) << "s\n";
+		}
+
+	}
+
+	updateCam(playerCam->m_pos, playerCam->m_rot);
 
 	//LOD Test
 	//float distance = (lodTest->m_pos - player->m_pos).length();
@@ -233,32 +271,47 @@ void checkInput() {
 		exitMain();
 	}
 	if (keyPressedFlags.w || keyPressedFlags.up) {
-		playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
-		playerCam->m_pos.x += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+		playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
+		playerCam->m_pos.x += playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.s || keyPressedFlags.down) {
-		playerCam->m_pos.z += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
-		playerCam->m_pos.x -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
+		playerCam->m_pos.z += playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
+		playerCam->m_pos.x -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.a || keyPressedFlags.left) {
-		playerCam->m_pos.z -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
-		playerCam->m_pos.x -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+		playerCam->m_pos.z -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
+		playerCam->m_pos.x -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.d || keyPressedFlags.right) {
-		playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed;
-		playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed;
+		playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
+		playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.q) {
-		playerCam->m_pos.y -= playerCam->m_walkingSpeed;
+		playerCam->m_pos.y -= playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.e) {
-		playerCam->m_pos.y += playerCam->m_walkingSpeed;
+		playerCam->m_pos.y += playerCam->m_walkingSpeed * deltaTime;
 	}
 	if (keyPressedFlags.c && keyChangedFlags.c) {
-		camSpline->clearSplinePoints();
+		camSpline->clearPoints();
 	}
 	if (keyPressedFlags.space && keyChangedFlags.space) {
-		camSpline->addSplinePoint(playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z);
+		camSpline->addPoint(playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z);
+	}
+	if (keyPressedFlags.t && keyChangedFlags.t) {
+		camSpline->toggleSplineRender();
+	}
+	if (keyPressedFlags.f && keyChangedFlags.f) {
+		//playerCam->m_pos = camSpline->getStart();
+		flyOnSplineTime = 0;
+		cout << "Line length: " << camSpline->getLineLength() << "m\n";
+		//int newRes = camSpline->getLineLength() / (playerCam->m_walkingSpeed * deltaTime);
+		//if (camSpline->m_ResolutionSteps != newRes) {
+		//	camSpline->m_ResolutionSteps = newRes;
+		//	camSpline->recalcSpline();
+		//}
+		cout << "Starting spline now\n";
+		startTime = glutGet(GLUT_ELAPSED_TIME);
 	}
 
 }
@@ -309,8 +362,14 @@ void keyPressed(unsigned char key, int x, int y)
 	case 'l':
 		keyPressedFlags.l = true;
 		break;
+	case 't':
+		keyPressedFlags.t = true;
+		break;
 	case 'c':
 		keyPressedFlags.c = true;
+		break;
+	case 'f':
+		keyPressedFlags.f = true;
 		break;
 	case ' ':
 		keyPressedFlags.space = true;
@@ -321,7 +380,7 @@ void specialKeyUp(int key, int x, int y) {
 	switch (key)
 	{
 	case GLUT_KEY_UP:
-		keyPressedFlags.space = false;
+		keyPressedFlags.up = false;
 		break;
 	case GLUT_KEY_DOWN:
 		keyPressedFlags.down = false;
@@ -359,10 +418,16 @@ void keyUp(unsigned char key, int x, int y) {
 		keyPressedFlags.e = false;
 		break;
 	case 'l':
-		keyPressedFlags.e = false;
+		keyPressedFlags.l = false;
+		break;
+	case 't':
+		keyPressedFlags.t = false;
 		break;
 	case 'c':
 		keyPressedFlags.c = false;
+		break;
+	case 'f':
+		keyPressedFlags.f = false;
 		break;
 	case ' ':
 		keyPressedFlags.space = false;
@@ -399,19 +464,36 @@ void mouseMoved(int x, int y)
 
 	//Rotation um y achse mit mouse x value
 
-	playerCam->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset) * playerCam->m_rotationSpeed) % 360;
+	playerCam->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset)* playerCam->m_rotationSpeed) % 360;
 	//cout << "y Rot: " << (player->m_rot.y - 180) << "\n";
 
 	//Rotation um x & z achse mit mouse y value
 	//TODO rotation um y achse berücksichtigen
-	playerCam->m_rot.x = static_cast<int>(static_cast<float>(y - xRotationOffset) * playerCam->m_rotationSpeed) % 360;
+	playerCam->m_rot.x = static_cast<int>(static_cast<float>(y - xRotationOffset)* playerCam->m_rotationSpeed) % 360;
 	//player->m_rot.z = static_cast<int>(static_cast<float>(y - zRotationOffset) * player->m_rotationSpeed) % 360;
 
 	//cout << "Move x: " << x << " y: " << y << "\n";
 }
 
-void setCam(Vector3f pos, Vector3f rot) {
+void updateCam(Vector3f pos, Vector3f rot) {
+	/*
+	//temporary frame quaternion from pitch,yaw,roll 
+	//here roll is not used
+	glm::quat key_quat = glm::quat(glm::vec3(rot.x, rot.y, rot.z));
+	//reset values
+	//key_pitch = key_yaw = key_roll = 0;
 
+	//order matters,update camera_quat
+	camera_quat = key_quat * camera_quat;
+	camera_quat = glm::normalize(camera_quat);
+	glm::mat4 rotate = glm::mat4_cast(camera_quat);
+
+	glm::mat4 translate = glm::mat4(1.0f);
+	translate = glm::translate(translate, -eyeVector);
+
+	viewMatrix = rotate * translate;
+	*/
+	//My thigs are working
 	//Rotate Scene
 
 	glRotatef(rot.x, 1.0f, 0.0f, 0.0f); //1. Pitch

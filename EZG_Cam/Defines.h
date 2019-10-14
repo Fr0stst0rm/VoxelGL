@@ -12,6 +12,12 @@
 
 #include <stddef.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp >
+#include <glm/gtx/quaternion.hpp>
+
+
 #include "Logger.h"
 
 #define XYZ_TO_ARRAY_INDEX(X,Y,Z, WIDTH, DEPTH) (((X) + ((Z) * (WIDTH))) + ((y) * (WIDTH) * (DEPTH)))

@@ -52,11 +52,24 @@ void updateInput() {
 	else {
 		(keyPressedFlags.l != lastKeyState.l) ? keyChangedFlags.l = true : keyChangedFlags.l = false;
 	}
+	if (keyPressedFlags.t) {
+		(keyPressedFlags.t != lastKeyState.t) ? keyChangedFlags.t = true : keyChangedFlags.t = false;
+	}
+	else {
+		(keyPressedFlags.t != lastKeyState.t) ? keyChangedFlags.t = true : keyChangedFlags.t = false;
+	}
 	if (keyPressedFlags.c) {
 		(keyPressedFlags.c != lastKeyState.c) ? keyChangedFlags.c = true : keyChangedFlags.c = false;
 	}
 	else {
 		(keyPressedFlags.c != lastKeyState.c) ? keyChangedFlags.c = true : keyChangedFlags.c = false;
+
+	}
+	if (keyPressedFlags.f) {
+		(keyPressedFlags.f != lastKeyState.f) ? keyChangedFlags.f = true : keyChangedFlags.f = false;
+	}
+	else {
+		(keyPressedFlags.f != lastKeyState.f) ? keyChangedFlags.f = true : keyChangedFlags.f = false;
 
 	}
 	if (keyPressedFlags.up) {
