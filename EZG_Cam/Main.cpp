@@ -56,7 +56,7 @@ void keyUp(unsigned char key, int x, int y);
 void mouseMoved(int x, int y);
 void mouseDragged(int x, int y);
 void mouseClicked(int button, int state, int x, int y);
-void updateCam(Vector3f pos, Vector3f rot);
+void updateCam(Vector3f pos, glm::quat rot);
 float findSpawnHeight(float x, float z);
 
 int main(int argc, char** argv)
@@ -119,9 +119,9 @@ void init(int width, int height)
 
 	//Config spawn
 
-	playerCam->m_pos.z = 5.0f;
+	playerCam->m_pos.z = 4.0f;
 	playerCam->m_pos.y = findSpawnHeight(playerCam->m_pos.x, playerCam->m_pos.z);
-	playerCam->m_walkingSpeed = 5.0f;
+	playerCam->m_walkingSpeed = 1.0f;
 
 	cout << "Finished loading\n";
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
@@ -145,24 +145,18 @@ void display()
 
 		playerCam->m_pos = camSpline->getByTime(flyOnSplineTime * playerCam->m_walkingSpeed);
 
-		glm::quat test = camSpline->getCameraRotationAtTime(flyOnSplineTime * playerCam->m_walkingSpeed);
-
-		Vector3f v3 = QuatToEuler(test);
-		playerCam->m_rot = v3;
-
-		//cout << "x " << test.x << "y " << test.y << "z " << test.z << "w " << test.w << "\n";
-		cout << "x: " << v3.x << " y: " << v3.y << " z: " << v3.z << "\n";
-
+		playerCam->m_keyRot = camSpline->getCameraRotationAtTime(flyOnSplineTime * playerCam->m_walkingSpeed);
+		
 		flyOnSplineTime += deltaTime;
 
-		if ((flyOnSplineTime * playerCam->m_walkingSpeed) > camSpline->getLineLength()) {
+		if (int(flyOnSplineTime * playerCam->m_walkingSpeed) >= camSpline->getPointCount()) {
 			flyOnSplineTime = -1;
 			cout << "Spline finished: " << (float(glutGet(GLUT_ELAPSED_TIME) - startTime) / 1000.0f) << "s\n";
 		}
 
 	}
 
-	updateCam(playerCam->m_pos, playerCam->m_rot);
+	updateCam(playerCam->m_pos, playerCam->m_keyRot);
 
 	//LOD Test
 	//float distance = (lodTest->m_pos - player->m_pos).length();
@@ -268,19 +262,35 @@ void checkInput() {
 	if (keyPressedFlags.esc) {
 		exitMain();
 	}
-	if (keyPressedFlags.w || keyPressedFlags.up) {
+	if (keyPressedFlags.up && keyChangedFlags.up) {
+		playerCam->m_walkingSpeed += 0.5f;
+		if (playerCam->m_walkingSpeed > 10) {
+			playerCam->m_walkingSpeed = 0;
+		}
+		cout << "Speed: " << playerCam->m_walkingSpeed << "\n";
+		
+	}
+	if (keyPressedFlags.down && keyChangedFlags.down) {
+		playerCam->m_walkingSpeed -= 0.5f;
+
+		if (playerCam->m_walkingSpeed < 1) {
+			playerCam->m_walkingSpeed = 0;
+		}
+		cout << "Speed: " << playerCam->m_walkingSpeed << "\n";
+	}
+	if (keyPressedFlags.w) {
 		playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 		playerCam->m_pos.x += playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 	}
-	if (keyPressedFlags.s || keyPressedFlags.down) {
+	if (keyPressedFlags.s) {
 		playerCam->m_pos.z += playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 		playerCam->m_pos.x -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 	}
-	if (keyPressedFlags.a || keyPressedFlags.left) {
+	if (keyPressedFlags.a) {
 		playerCam->m_pos.z -= playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 		playerCam->m_pos.x -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 	}
-	if (keyPressedFlags.d || keyPressedFlags.right) {
+	if (keyPressedFlags.d) {
 		playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 		playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 	}
@@ -294,20 +304,14 @@ void checkInput() {
 		camSpline->clearPoints();
 	}
 	if (keyPressedFlags.space && keyChangedFlags.space) {
-		camSpline->addPoint(playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z);
+		camSpline->addPoint({ playerCam->m_pos.x, playerCam->m_pos.y, playerCam->m_pos.z }, playerCam->m_keyRot);
 	}
 	if (keyPressedFlags.t && keyChangedFlags.t) {
 		camSpline->toggleSplineRender();
 	}
 	if (keyPressedFlags.f && keyChangedFlags.f) {
-		//playerCam->m_pos = camSpline->getStart();
 		flyOnSplineTime = 0;
 		cout << "Line length: " << camSpline->getLineLength() << "m\n";
-		//int newRes = camSpline->getLineLength() / (playerCam->m_walkingSpeed * deltaTime);
-		//if (camSpline->m_ResolutionSteps != newRes) {
-		//	camSpline->m_ResolutionSteps = newRes;
-		//	camSpline->recalcSpline();
-		//}
 		cout << "Starting spline now\n";
 		startTime = glutGet(GLUT_ELAPSED_TIME);
 	}
@@ -462,20 +466,22 @@ void mouseMoved(int x, int y)
 
 	//Rotation um y achse mit mouse x value
 
-	playerCam->m_rot.y = static_cast<int>(static_cast<float>(x - yRotationOffset)* playerCam->m_rotationSpeed) % 360;
-	//cout << "y Rot: " << (player->m_rot.y - 180) << "\n";
+	float xDeg = static_cast<int>(static_cast<float>(y - xRotationOffset)* playerCam->m_rotationSpeed) % 360;
+	float yDeg = static_cast<int>(static_cast<float>(x - yRotationOffset)* playerCam->m_rotationSpeed) % 360;
 
-	//Rotation um x & z achse mit mouse y value
-	//TODO rotation um y achse berücksichtigen
-	playerCam->m_rot.x = static_cast<int>(static_cast<float>(y - xRotationOffset)* playerCam->m_rotationSpeed) % 360;
-	//player->m_rot.z = static_cast<int>(static_cast<float>(y - zRotationOffset) * player->m_rotationSpeed) % 360;
+	glm::quat mouseRot(glm::vec3(glm::radians(xDeg), glm::radians(yDeg), glm::radians(0.0f)));
 
-	//cout << "Move x: " << x << " y: " << y << "\n";
+	playerCam->m_keyRot = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
+	playerCam->m_keyRot *= glm::quat({ 0.0f, glm::radians(yDeg), 0.0f });
+	playerCam->m_keyRot = glm::quat({ glm::radians(xDeg), 0.0f, 0.0f }) * playerCam->m_keyRot;
+
+	//cout << "CamRot Y: " << glm::degrees(glm::eulerAngles(playerCam->m_keyRot).y) << "\n";
+
 }
 
-void updateCam(Vector3f pos, Vector3f rot) {
+void updateCam(Vector3f pos, glm::quat rot) {
 	/*
-	//temporary frame quaternion from pitch,yaw,roll 
+	//temporary frame quaternion from pitch,yaw,roll
 	//here roll is not used
 	glm::quat key_quat = glm::quat(glm::vec3(rot.x, rot.y, rot.z));
 	//reset values
@@ -494,8 +500,10 @@ void updateCam(Vector3f pos, Vector3f rot) {
 	//My thigs are working
 	//Rotate Scene
 
-	glRotatef(rot.x, 1.0f, 0.0f, 0.0f); //1. Pitch
-	glRotatef(rot.y, 0.0f, 1.0f, 0.0f); //2. Yaw
+	glRotatef(glm::degrees(glm::angle(rot)), rot.x, rot.y, rot.z);
+
+	//glRotatef(rot.x, 1.0f, 0.0f, 0.0f); //1. Pitch
+	//glRotatef(rot.y, 0.0f, 1.0f, 0.0f); //2. Yaw
 
 	//Move player
 	glTranslatef(-pos.x, -pos.y, -pos.z);

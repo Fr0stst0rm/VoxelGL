@@ -19,7 +19,7 @@ public:
 
 	void addPoint(float x, float y, float z);
 	void addPoint(Point p);
-	void addPoint(Point p, Vector3f r);
+	void addPoint(Point p, glm::quat r);
 
 	void clearPoints();
 
@@ -55,7 +55,6 @@ protected:
 	std::vector<Point>* m_ControlPoints;
 	std::vector<Point>* m_SplinePoints;
 
-	std::vector<glm::vec3>* m_CamRot;
 	std::vector<glm::quat> * m_CamRotQuat;
 
 	std::vector<Point> calcSplineSeg(Point p0, Point p1, Point p2, Point p3);

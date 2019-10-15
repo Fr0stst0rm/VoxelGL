@@ -20,8 +20,9 @@ Player::~Player()
 
 Vector3f Player::getLookingDir()
 {
-	float z = cosf(m_rot.y / 180 * M_PI);
-	float x = sinf(m_rot.y / 180 * M_PI);
+	float y = glm::degrees(glm::eulerAngles(m_keyRot).y);
+	float z = cosf(y / 180 * M_PI);
+	float x = sinf(y / 180 * M_PI);
 
 	//cout << "X: " << x << " Z: " << z << "\n";
 
