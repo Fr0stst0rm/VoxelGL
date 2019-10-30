@@ -7,8 +7,8 @@
 *.userosscache
 *.sln.docstates
 
-*.sln
-*.vcxproj
+#*.sln
+#*.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.vs/
