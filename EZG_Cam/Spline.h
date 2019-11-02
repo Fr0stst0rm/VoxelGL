@@ -61,7 +61,7 @@ protected:
 
 	glm::quat squad(glm::quat q0, glm::quat q1, glm::quat q2, glm::quat q3, float t);
 
-	RGBA m_Color = { 1,1,1,1 };
+	RGBAL m_Color = { 1,1,1,1 };
 
 	float m_LineWidth = 1.0f;
 

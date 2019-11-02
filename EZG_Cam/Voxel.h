@@ -19,11 +19,13 @@ public:
 	Voxel(VoxelType type);
 	~Voxel();
 
+	void draw();
 	void draw(int x, int y, int z);
 
 	void drawTransparent(int x, int y, int z);
 
 	bool isTransparent();
+	bool isShining();
 
 	VoxelType m_type;
 

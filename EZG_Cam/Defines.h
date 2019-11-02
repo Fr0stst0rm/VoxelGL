@@ -14,19 +14,22 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp >
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+
+#include "Shader.h"
 
 
 #include "Logger.h"
 
 #define XYZ_TO_ARRAY_INDEX(X,Y,Z, WIDTH, DEPTH) (((X) + ((Z) * (WIDTH))) + ((y) * (WIDTH) * (DEPTH)))
 
-struct RGBA {
+struct RGBAL {
 	float red = 1;
 	float green = 1;
 	float blue = 1;
 	float alpha = 1;
+	float light = 1;
 };
 
 struct Point {
