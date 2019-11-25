@@ -41,27 +41,30 @@ void Object3D::drawColor(float x, float y, float z, float size, float r, float g
 
 }
 
-void Object3D::drawTexture(float x, float y, float z, GLuint texture)
+void Object3D::drawTexture(float x, float y, float z, GLuint texture, GLuint normalMap)
 {
-	drawTexture(x, y, z, 1, texture);
+	drawTexture(x, y, z, 1, texture, normalMap);
 }
 
-void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture)
+void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap)
 {
-	drawTexture(x, y, z, 1, texture, 1, 1, 1, 1);
+	drawTexture(x, y, z, 1, texture, normalMap, 1, 1, 1, 1);
 }
 
-void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, RGBAL rgba) {
-	drawTexture(x, y, z, size, texture, rgba.red, rgba.green, rgba.blue, rgba.alpha);
+void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap, RGBAL rgba) {
+	drawTexture(x, y, z, size, texture, normalMap, rgba.red, rgba.green, rgba.blue, rgba.alpha);
 }
 
-void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, float r, float g, float b, float a)
+void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap, float r, float g, float b, float a)
 {
 	//glEnable(GL_TEXTURE_2D);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normalMap);
 
 	drawColor(x, y, z, size, r, g, b, 1);
 

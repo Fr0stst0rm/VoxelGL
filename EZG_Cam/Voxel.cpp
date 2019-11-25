@@ -21,7 +21,7 @@ void Voxel::draw(int x, int y, int z)
 {
 	if (m_type != VoxelType::AIR) {
 		if (VoxelTypes::hasTexture(m_type)) {
-			drawTexture(x, y, z, VOXEL_SIZE, VoxelTypes::getTexture(m_type), VoxelTypes::getColor(m_type));
+			drawTexture(x, y, z, VOXEL_SIZE, VoxelTypes::getTexture(m_type), VoxelTypes::getNormalMap(m_type), VoxelTypes::getColor(m_type));
 		}
 		else {
 			drawColor(x, y, z, VOXEL_SIZE, VoxelTypes::getColor(m_type));

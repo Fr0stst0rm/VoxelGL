@@ -8,6 +8,7 @@ in VS_OUT {
 } fs_in;
 
 uniform sampler2D diffuseTexture;
+uniform sampler2D normalMap;
 uniform samplerCube depthMap;
 
 uniform vec3 lightPos;

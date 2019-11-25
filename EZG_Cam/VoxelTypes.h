@@ -27,6 +27,7 @@ extern RGBAL colorTable[];
 namespace VoxelTypes
 {
 	GLuint getTexture(VoxelType type);
+	GLuint getNormalMap(VoxelType type);
 	RGBAL getColor(VoxelType type);
 	bool isTransparent(VoxelType type);
 	bool isShining(VoxelType type);

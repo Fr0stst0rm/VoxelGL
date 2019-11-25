@@ -23,6 +23,11 @@ namespace VoxelTypes
 		return TextureManager::getTexture(type);
 	}
 
+	GLuint getNormalMap(VoxelType type)
+	{
+		return TextureManager::getNormalMap(type);
+	}
+
 	RGBAL getColor(VoxelType type)
 	{
 		return colorTable[type];

@@ -24,8 +24,8 @@ using namespace std;
 
 int window;
 
-const int win_width = 1920;
-const int win_height = 1080;
+const int WIN_WIDTH = 1920;
+const int WIN_HEIGHT = 1080;
 
 const unsigned int SHADOW_WIDTH = 1024;
 const unsigned int SHADOW_HEIGHT = 1024;
@@ -41,8 +41,8 @@ bool shadows = true;
 long lastTime;
 float deltaTime;
 
-float lastMouseX = win_width / 2.0f;
-float lastMouseY = win_height / 2.0f;
+float lastMouseX = WIN_WIDTH / 2.0f;
+float lastMouseY = WIN_HEIGHT / 2.0f;
 
 int xRotationOffset = -1;
 int yRotationOffset = -1;
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
-	glutInitWindowSize(win_width, win_height);
+	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
 	glutInitWindowPosition(0, 0);
 	window = glutCreateWindow("VoxelTest");
 
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 	glutMotionFunc(&mouseDragged);
 	glutPassiveMotionFunc(&mouseMoved);
 
-	init(win_width, win_height);
+	init(WIN_WIDTH, WIN_HEIGHT);
 	glutTimerFunc(15, timer, 1);
 	//glutFullScreen();
 
@@ -157,14 +157,14 @@ void init(int width, int height)
 	pointShadow = new Shader("Shader/point_shadows.vs", "Shader/point_shadows.fs");
 	simpleDepthShader = new Shader("Shader/point_shadows_depth.vs", "Shader/point_shadows_depth.fs", "Shader/point_shadows_depth.gs");
 
-	// configure depth map FBO
-	// -----------------------
+	//depth map FBO
 	glGenFramebuffers(1, &depthMapFBO);
 	// create depth cubemap texture
 	glGenTextures(1, &depthCubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
+	for (int i = 0; i < 6; ++i) {
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -204,7 +204,8 @@ void init(int width, int height)
 	// --------------------
 	pointShadow->use();
 	pointShadow->setInt("diffuseTexture", 0);
-	pointShadow->setInt("depthMap", 1);
+	pointShadow->setInt("normalMap", 1);
+	pointShadow->setInt("depthMap", 2);
 
 	cout << "Finished loading\n";
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
@@ -221,13 +222,10 @@ void display()
 	checkInput();
 
 	// Graphics
-	//glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	// 0. create depth cubemap transformation matrices
-	// -----------------------------------------------
-
+	// create depth cubemap transformation matrices
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
 	std::vector<glm::mat4> shadowTransforms;
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -237,13 +235,12 @@ void display()
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 
-	// 1. render scene to depth cubemap
-	// --------------------------------
+	// render depth cubemap
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	simpleDepthShader->use();
-	for (unsigned int i = 0; i < 6; ++i) {
+	for (int i = 0; i < 6; ++i) {
 		simpleDepthShader->setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 	}
 	simpleDepthShader->setFloat("far_plane", far_plane);
@@ -251,24 +248,21 @@ void display()
 	renderScene(simpleDepthShader);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// 2. render scene as normal 
-		// -------------------------
-	glViewport(0, 0, win_width, win_height);
+	//render scene
+	glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	pointShadow->use();
-	glm::mat4 projection = glm::perspective(glm::radians(playerCam->Zoom), (float)win_width / (float)win_height, near_plane, far_plane);
+	glm::mat4 projection = glm::perspective(glm::radians(playerCam->Zoom), (float)WIN_WIDTH / (float)WIN_HEIGHT, near_plane, far_plane);
 	glm::mat4 view = playerCam->GetViewMatrix();
 	pointShadow->setMat4("projection", projection);
 	pointShadow->setMat4("view", view);
 	// set lighting uniforms
 	pointShadow->setVec3("lightPos", lightPos);
 	pointShadow->setVec3("viewPos", playerCam->Position);
-	pointShadow->setInt("shadows", shadows); // enable/disable shadows by pressing 'SPACE'
+	pointShadow->setInt("shadows", shadows);
 	pointShadow->setFloat("far_plane", far_plane);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, VoxelTypes::getTexture(VoxelType::BEDROCK));
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
 	renderScene(pointShadow);

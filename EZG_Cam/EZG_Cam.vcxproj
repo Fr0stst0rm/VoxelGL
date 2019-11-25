@@ -84,11 +84,11 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Programme\OpenGL\glew\include;D:\Programme\OpenGL\freeglut\include;D:\Programme\OpenGL\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>S:\Programme\OpenGL\glew\include;S:\Programme\OpenGL\freeglut\include;S:\Programme\OpenGL\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/d1reportSingleClassLayoutVoxel</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\Programme\OpenGL\freeglut\lib\x64;D:\Programme\OpenGL\glew\lib\Release\x64;D:\Programme\OpenGL\glm;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>S:\Programme\OpenGL\freeglut\lib\x64;S:\Programme\OpenGL\glew\lib\Release\x64;S:\Programme\OpenGL\glm;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

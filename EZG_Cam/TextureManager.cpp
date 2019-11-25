@@ -1,15 +1,21 @@
 #include "TextureManager.h"
 
 std::map<uint16_t, GLuint> TextureManager::m_textureLib;
+std::map<uint16_t, GLuint> TextureManager::m_normalMapLib;
 
 TextureManager::TextureManager() {
 	std::cout << "Loding texture config from: " << m_pathToTextureConfigFile << "\n";
 
 	//TODO
-	addTexture(0, "cheese.tga");
-	addTexture(1, "VoxelTexture.tga");
-	addTexture(2, "crate.tga");
-	addTexture(3, "wall.tga");
+	loadTextureFile(0, "cheese_d.tga", m_textureLib);
+	loadTextureFile(1, "VoxelTexture_d.tga", m_textureLib);
+	loadTextureFile(2, "crate_d.tga", m_textureLib);
+	loadTextureFile(3, "wall_d.tga", m_textureLib);
+
+	loadTextureFile(0, "cheese_n.tga", m_normalMapLib);
+	loadTextureFile(1, "VoxelTexture_n.tga", m_normalMapLib);
+	loadTextureFile(2, "crate_n.tga", m_normalMapLib);
+	loadTextureFile(3, "wall_n.tga", m_normalMapLib);
 }
 
 TextureManager::~TextureManager() {
@@ -32,8 +38,13 @@ bool TextureManager::containsTexture(uint16_t textureIndex)
 	return (getInstance().m_textureLib.find(textureIndex) != getInstance().m_textureLib.end());
 }
 
+GLuint TextureManager::getNormalMap(uint16_t textureIndex)
+{
+	return getInstance().m_textureLib[textureIndex]; //TODO
+}
 
-void TextureManager::addTexture(uint16_t index, const std::string path, bool generateMipMap)
+
+void TextureManager::loadTextureFile(uint16_t index, const std::string path, std::map<uint16_t, GLuint>& texLib, bool generateMipMap)
 {
 	GLsizei w, h;
 	tgaInfo *info = 0;
@@ -79,5 +90,5 @@ void TextureManager::addTexture(uint16_t index, const std::string path, bool gen
 	}
 	tgaDestroy(info);
 
-	m_textureLib[index] = texture;
+	texLib[index] = texture;
 }

@@ -37,10 +37,10 @@ public:
 	void drawColor(float x, float y, float z, float size, RGBAL color);
 	void drawColor(float x, float y, float z, float size, float r, float g, float b, float a);
 
-	void drawTexture(float x, float y, float z, GLuint texture);
-	void drawTexture(float x, float y, float z, float size, GLuint texture);
-	void drawTexture(float x, float y, float z, float size, GLuint texture, float r, float g, float b, float a);
-	void drawTexture(float x, float y, float z, float size, GLuint texture, RGBAL rgba);
+	void drawTexture(float x, float y, float z, GLuint texture, GLuint normalMap);
+	void drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap);
+	void drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap, float r, float g, float b, float a);
+	void drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap, RGBAL rgba);
 
 
 protected:
