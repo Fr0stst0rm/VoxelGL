@@ -57,7 +57,7 @@ void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture
 
 void Object3D::drawTexture(float x, float y, float z, float size, GLuint texture, GLuint normalMap, float r, float g, float b, float a)
 {
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
 	glActiveTexture(GL_TEXTURE0);

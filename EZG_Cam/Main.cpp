@@ -22,6 +22,10 @@
 
 using namespace std;
 
+// x --> left/right
+// y --> up/down
+// z --> forward/backward
+
 int window;
 
 const int WIN_WIDTH = 1920;
@@ -30,7 +34,7 @@ const int WIN_HEIGHT = 1080;
 const unsigned int SHADOW_WIDTH = 1024;
 const unsigned int SHADOW_HEIGHT = 1024;
 
-float near_plane = 1.0f;
+float near_plane = 0.5f;
 float far_plane = 1000.0f;
 
 unsigned int depthMapFBO;
@@ -58,13 +62,14 @@ shared_ptr<Spline> camSpline;
 //shared_ptr<LodObject> lodTest;
 
 //shader
-Shader* lightingShader;
-Shader* lampShader;
+//Shader* lightingShader;
+//Shader* lampShader;
 Shader* pointShadow;
-Shader* simpleDepthShader;
+Shader* depthShader;
 
 // lighting
-glm::vec3 lightPos(5.0f, 5.0f, 0.0f);
+float lightSpeed = 0.25f;
+glm::vec3 lightPos(0.0f, 5.0f, 0.0f);
 
 
 void display();
@@ -152,10 +157,10 @@ void init(int width, int height)
 	// build and compile our shader zprogram
 	// ------------------------------------
 
-	lightingShader = new Shader("Shader/basic_lighting.vs", "Shader/basic_lighting.fs");
-	lampShader = new Shader("Shader/basic_lighting.vs", "Shader/lamp.fs");
+	//lightingShader = new Shader("Shader/basic_lighting.vs", "Shader/basic_lighting.fs");
+	//lampShader = new Shader("Shader/basic_lighting.vs", "Shader/lamp.fs");
 	pointShadow = new Shader("Shader/point_shadows.vs", "Shader/point_shadows.fs");
-	simpleDepthShader = new Shader("Shader/point_shadows_depth.vs", "Shader/point_shadows_depth.fs", "Shader/point_shadows_depth.gs");
+	depthShader = new Shader("Shader/point_shadows_depth.vs", "Shader/point_shadows_depth.fs", "Shader/point_shadows_depth.gs");
 
 	//depth map FBO
 	glGenFramebuffers(1, &depthMapFBO);
@@ -177,8 +182,8 @@ void init(int width, int height)
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-	Voxel * voxel;
+	/*
+	Voxel* voxel;
 	for (uint32_t z = 0; z < LoadedLevel::m_depth; z++) {
 		for (uint32_t y = 0; y < LoadedLevel::m_height; y++) {
 			for (uint32_t x = 0; x < LoadedLevel::m_width; x++) {
@@ -199,6 +204,7 @@ void init(int width, int height)
 			}
 		}
 	}
+	*/
 
 	// shader configuration
 	// --------------------
@@ -206,6 +212,8 @@ void init(int width, int height)
 	pointShadow->setInt("diffuseTexture", 0);
 	pointShadow->setInt("normalMap", 1);
 	pointShadow->setInt("depthMap", 2);
+
+	pointShadow->setVec3("lightColor", glm::vec3(0.5f,0.5f,0.5f));
 
 	cout << "Finished loading\n";
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
@@ -225,6 +233,9 @@ void display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
+	//Move light
+	lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
+
 	// create depth cubemap transformation matrices
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
 	std::vector<glm::mat4> shadowTransforms;
@@ -239,13 +250,13 @@ void display()
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	simpleDepthShader->use();
+	depthShader->use();
 	for (int i = 0; i < 6; ++i) {
-		simpleDepthShader->setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+		depthShader->setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 	}
-	simpleDepthShader->setFloat("far_plane", far_plane);
-	simpleDepthShader->setVec3("lightPos", lightPos);
-	renderScene(simpleDepthShader);
+	depthShader->setFloat("far_plane", far_plane);
+	depthShader->setVec3("lightPos", lightPos);
+	renderScene(depthShader);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//render scene
@@ -267,6 +278,17 @@ void display()
 
 	renderScene(pointShadow);
 
+	//Render light
+	pointShadow->setInt("shadows", false);
+	glm::mat4 m_model(1.0f);
+	m_model = glm::translate(m_model, glm::vec3(lightPos.x, lightPos.y, lightPos.z));
+	pointShadow->setMat4("model", m_model);
+
+	//glColor3f(1, 0, 0);
+	GLUquadric* quad;
+	quad = gluNewQuadric();
+	gluSphere(quad, 0.33, 10, 10);
+
 	glutSwapBuffers();
 }
 
@@ -283,8 +305,10 @@ void hideConsole()
 
 void exitMain() {
 	//Free memory
-	delete lightingShader;
-	delete lampShader;
+	//delete lightingShader;
+	//delete lampShader;
+	delete pointShadow;
+	delete depthShader;
 
 	exit(0);
 }
@@ -555,7 +579,7 @@ float findSpawnHeight(float x, float z) {
 	return y + 1;
 }
 
-void renderScene(Shader * shader) {
+void renderScene(Shader* shader) {
 	//LOD Test
 	//float distance = (lodTest->m_pos - player->m_pos).length();
 	//cout << "LodDistance: " << distance << "\n";

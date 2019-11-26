@@ -7,13 +7,13 @@ TextureManager::TextureManager() {
 	std::cout << "Loding texture config from: " << m_pathToTextureConfigFile << "\n";
 
 	//TODO
-	loadTextureFile(0, "cheese_d.tga", m_textureLib);
-	loadTextureFile(1, "VoxelTexture_d.tga", m_textureLib);
+	loadTextureFile(1, "cheese_d.tga", m_textureLib);
+	loadTextureFile(0, "VoxelTexture_d.tga", m_textureLib);
 	loadTextureFile(2, "crate_d.tga", m_textureLib);
 	loadTextureFile(3, "wall_d.tga", m_textureLib);
 
-	loadTextureFile(0, "cheese_n.tga", m_normalMapLib);
-	loadTextureFile(1, "VoxelTexture_n.tga", m_normalMapLib);
+	loadTextureFile(1, "cheese_n.tga", m_normalMapLib);
+	loadTextureFile(0, "VoxelTexture_n.tga", m_normalMapLib);
 	loadTextureFile(2, "crate_n.tga", m_normalMapLib);
 	loadTextureFile(3, "wall_n.tga", m_normalMapLib);
 }
@@ -40,7 +40,7 @@ bool TextureManager::containsTexture(uint16_t textureIndex)
 
 GLuint TextureManager::getNormalMap(uint16_t textureIndex)
 {
-	return getInstance().m_textureLib[textureIndex]; //TODO
+	return getInstance().m_normalMapLib[textureIndex]; //TODO
 }
 
 
