@@ -68,9 +68,11 @@ Shader* pointShadow;
 Shader* depthShader;
 
 // lighting
-float lightSpeed = 0.25f;
+float lightSpeed = 0; // .25f;
 glm::vec3 lightPos(0.0f, 5.0f, 0.0f);
 
+//Normal bumpiness
+float bumpiness = 1;
 
 void display();
 void exitMain();
@@ -234,7 +236,7 @@ void display()
 	glLoadIdentity();
 
 	//Move light
-	lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
+	//lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
 
 	// create depth cubemap transformation matrices
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
@@ -272,6 +274,7 @@ void display()
 	pointShadow->setVec3("viewPos", playerCam->Position);
 	pointShadow->setInt("shadows", shadows);
 	pointShadow->setFloat("far_plane", far_plane);
+	pointShadow->setFloat("bumpiness", bumpiness);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
@@ -348,6 +351,19 @@ void checkInput() {
 		}
 		cout << "Speed: " << playerCam->m_movementSpeed << "\n";
 	}
+	if (keyPressedFlags.left) {
+		bumpiness -= deltaTime;
+		if (bumpiness < 0) bumpiness = 0;
+		//cout << "Bumpiness: " << bumpiness << "\n";
+	}
+	if (keyPressedFlags.right) {
+		bumpiness += deltaTime;
+		if (bumpiness > 1) bumpiness = 1;
+		//cout << "Bumpiness: " << bumpiness << "\n";
+	}
+	if (keyPressedFlags.e) {
+		lightPos.z += 0.5 * deltaTime;
+	}
 	if (keyPressedFlags.w) {
 		playerCam->ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
 		//playerCam->m_pos.z -= playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
@@ -392,125 +408,6 @@ void checkInput() {
 		startTime = glutGet(GLUT_ELAPSED_TIME);
 	}
 
-}
-
-void specialKeyPressed(int key, int x, int y)
-{
-	switch (key)
-	{
-	case GLUT_KEY_UP:
-		keyPressedFlags.up = true;
-		break;
-	case GLUT_KEY_DOWN:
-		keyPressedFlags.down = true;
-		break;
-	case GLUT_KEY_LEFT:
-		keyPressedFlags.left = true;
-		break;
-	case GLUT_KEY_RIGHT:
-		keyPressedFlags.right = true;
-		break;
-	}
-}
-
-void keyPressed(unsigned char key, int x, int y)
-{
-	switch (key) {
-	case 27:
-		keyPressedFlags.esc = true;
-		break;
-	case 'w':
-		keyPressedFlags.w = true;
-		break;
-	case 's':
-		keyPressedFlags.s = true;
-		break;
-	case 'a':
-		keyPressedFlags.a = true;
-		break;
-	case 'd':
-		keyPressedFlags.d = true;
-		break;
-	case 'q':
-		keyPressedFlags.q = true;
-		break;
-	case 'e':
-		keyPressedFlags.e = true;
-		break;
-	case 'l':
-		keyPressedFlags.l = true;
-		break;
-	case 't':
-		keyPressedFlags.t = true;
-		break;
-	case 'c':
-		keyPressedFlags.c = true;
-		break;
-	case 'f':
-		keyPressedFlags.f = true;
-		break;
-	case ' ':
-		keyPressedFlags.space = true;
-		break;
-	}
-}
-void specialKeyUp(int key, int x, int y) {
-	switch (key)
-	{
-	case GLUT_KEY_UP:
-		keyPressedFlags.up = false;
-		break;
-	case GLUT_KEY_DOWN:
-		keyPressedFlags.down = false;
-		break;
-	case GLUT_KEY_LEFT:
-		keyPressedFlags.left = false;
-		break;
-	case GLUT_KEY_RIGHT:
-		keyPressedFlags.right = false;
-		break;
-	}
-}
-
-void keyUp(unsigned char key, int x, int y) {
-	switch (key) {
-	case 27:
-		keyPressedFlags.esc = false;
-		break;
-	case 'w':
-		keyPressedFlags.w = false;
-		break;
-	case 's':
-		keyPressedFlags.s = false;
-		break;
-	case 'a':
-		keyPressedFlags.a = false;
-		break;
-	case 'd':
-		keyPressedFlags.d = false;
-		break;
-	case 'q':
-		keyPressedFlags.q = false;
-		break;
-	case 'e':
-		keyPressedFlags.e = false;
-		break;
-	case 'l':
-		keyPressedFlags.l = false;
-		break;
-	case 't':
-		keyPressedFlags.t = false;
-		break;
-	case 'c':
-		keyPressedFlags.c = false;
-		break;
-	case 'f':
-		keyPressedFlags.f = false;
-		break;
-	case ' ':
-		keyPressedFlags.space = false;
-		break;
-	}
 }
 
 void mouseClicked(int button, int state, int x, int y)

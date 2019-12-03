@@ -7,15 +7,15 @@ TextureManager::TextureManager() {
 	std::cout << "Loding texture config from: " << m_pathToTextureConfigFile << "\n";
 
 	//TODO
-	loadTextureFile(1, "cheese_d.tga", m_textureLib);
-	loadTextureFile(0, "VoxelTexture_d.tga", m_textureLib);
-	loadTextureFile(2, "crate_d.tga", m_textureLib);
-	loadTextureFile(3, "wall_d.tga", m_textureLib);
+	loadTextureFile(1, "Textures/cheese_d.tga", m_textureLib);
+	loadTextureFile(0, "Textures/VoxelTexture_d.tga", m_textureLib);
+	loadTextureFile(2, "Textures/crate_d.tga", m_textureLib);
+	loadTextureFile(3, "Textures/wall_d.tga", m_textureLib);
 
-	loadTextureFile(1, "cheese_n.tga", m_normalMapLib);
-	loadTextureFile(0, "VoxelTexture_n.tga", m_normalMapLib);
-	loadTextureFile(2, "crate_n.tga", m_normalMapLib);
-	loadTextureFile(3, "wall_n.tga", m_normalMapLib);
+	loadTextureFile(1, "Textures/cheese_n.tga", m_normalMapLib);
+	loadTextureFile(0, "Textures/VoxelTexture_n.tga", m_normalMapLib);
+	loadTextureFile(2, "Textures/crate_n.tga", m_normalMapLib);
+	loadTextureFile(3, "Textures/wall_n.tga", m_normalMapLib);
 }
 
 TextureManager::~TextureManager() {

@@ -1,6 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <GL/freeglut_std.h>
+
 struct KeyFlags
 {
 	bool w : 1;
