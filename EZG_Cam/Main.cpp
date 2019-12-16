@@ -68,17 +68,23 @@ Shader* pointShadow;
 Shader* depthShader;
 
 // lighting
-float lightSpeed = 0; // .25f;
+float lightSpeed = 0.0f;
 glm::vec3 lightPos(0.0f, 5.0f, 0.0f);
 
 //Normal bumpiness
 float bumpiness = 1;
 
+//------------------------ Anti aliasing ------------------------------------
+int samplingRate = 2;
+bool useAntiAliasing = false;
+bool switchMode = false;
+GLenum aAMode = GL_FASTEST;
+
 void display();
 void exitMain();
 void hideConsole();
 void timer(int value);
-void init(int width, int height);
+void initGame();
 void resize(int width, int height);
 void checkInput();
 void specialKeyPressed(int key, int x, int y);
@@ -90,15 +96,33 @@ void mouseDragged(int x, int y);
 void mouseClicked(int button, int state, int x, int y);
 float findSpawnHeight(float x, float z);
 void renderScene(Shader* shader);
+void initWindow(int width, int height);
 
 int main(int argc, char** argv)
 {
 	//hideConsole();
 
+	initGame();
+
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
-	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
+	initWindow(WIN_WIDTH, WIN_HEIGHT);
+
+	glutTimerFunc(15, timer, 1);
+	//glutFullScreen();
+	glutMainLoop();
+	exitMain();
+	return 0;
+}
+
+void initWindow(int width, int height) {
+
+	glutSetOption(GLUT_MULTISAMPLE, samplingRate);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH | GLUT_STENCIL | GLUT_MULTISAMPLE);
+	glHint(GL_MULTISAMPLE_FILTER_HINT_NV, aAMode);
+
+	glutInitWindowSize(width, height);
 	glutInitWindowPosition(0, 0);
+
 	window = glutCreateWindow("VoxelTest");
 
 	glutDisplayFunc(&display);
@@ -108,22 +132,12 @@ int main(int argc, char** argv)
 	glutKeyboardUpFunc(&keyUp);
 	glutSpecialFunc(&specialKeyPressed);
 	glutSpecialUpFunc(&specialKeyUp);
-	glutMouseFunc(&mouseClicked);
 
+	glutMouseFunc(&mouseClicked);
 	glutMotionFunc(&mouseDragged);
+
 	glutPassiveMotionFunc(&mouseMoved);
 
-	init(WIN_WIDTH, WIN_HEIGHT);
-	glutTimerFunc(15, timer, 1);
-	//glutFullScreen();
-
-	glutMainLoop();
-	exitMain();
-	return 0;
-}
-
-void init(int width, int height)
-{
 	glewInit();
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -131,30 +145,13 @@ void init(int width, int height)
 	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);
 	glShadeModel(GL_SMOOTH);
-
 	resize(width, height);
-
 	cout << "Start loading\n";
 
-	//Create game object here
-	playerCam = make_shared<Player>();
-
-	//lodTest = make_shared<LodObject>();
 	//lodTest->m_pos.y = 4;
 
-	camSpline = make_shared<Spline>();
 	camSpline->setLineWidth(5.0f);
 	camSpline->setColor(1, 0, 0, 1);
-
-	//Load Level
-
-	LoadedLevel::loadLevel(Level1::map, Level1::width, Level1::height, Level1::depth);
-
-	//Config spawn
-	playerCam->setPos(glm::vec3(0.0f, findSpawnHeight(0.0f, 4.0f), 4.0f));
-
-	playerCam->m_movementSpeed = 10.0f;
-	playerCam->setRotationSpeed(0.5f);
 
 	// build and compile our shader zprogram
 	// ------------------------------------
@@ -184,6 +181,36 @@ void init(int width, int height)
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// shader configuration
+	// --------------------
+	pointShadow->use();
+	pointShadow->setInt("diffuseTexture", 0);
+	pointShadow->setInt("normalMap", 1);
+	pointShadow->setInt("depthMap", 2);
+
+	pointShadow->setVec3("lightColor", glm::vec3(0.5f, 0.5f, 0.5f));
+
+	cout << "Finished loading\n";
+	
+	lastTime = glutGet(GLUT_ELAPSED_TIME);
+}
+
+void initGame()
+{
+	//Create game object here
+	playerCam = make_shared<Player>();
+	//lodTest = make_shared<LodObject>();
+	camSpline = make_shared<Spline>();
+
+	//Load Level
+	LoadedLevel::loadLevel(Level1::map, Level1::width, Level1::height, Level1::depth);
+
+	//Config spawn
+	playerCam->setPos(glm::vec3(0.0f, findSpawnHeight(0.0f, 4.0f), 4.0f));
+
+	playerCam->m_movementSpeed = 10.0f;
+	playerCam->setRotationSpeed(0.5f);
+
 	/*
 	Voxel* voxel;
 	for (uint32_t z = 0; z < LoadedLevel::m_depth; z++) {
@@ -207,18 +234,6 @@ void init(int width, int height)
 		}
 	}
 	*/
-
-	// shader configuration
-	// --------------------
-	pointShadow->use();
-	pointShadow->setInt("diffuseTexture", 0);
-	pointShadow->setInt("normalMap", 1);
-	pointShadow->setInt("depthMap", 2);
-
-	pointShadow->setVec3("lightColor", glm::vec3(0.5f,0.5f,0.5f));
-
-	cout << "Finished loading\n";
-	lastTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
 void display()
@@ -232,11 +247,19 @@ void display()
 	checkInput();
 
 	// Graphics
+
+	if (useAntiAliasing) {
+		glEnable(GL_MULTISAMPLE);
+	}
+	else {
+		glDisable(GL_MULTISAMPLE);
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
 	//Move light
-	//lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
+	lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
 
 	// create depth cubemap transformation matrices
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
@@ -406,6 +429,45 @@ void checkInput() {
 		cout << "Line length: " << camSpline->getLineLength() << "m\n";
 		cout << "Starting spline now\n";
 		startTime = glutGet(GLUT_ELAPSED_TIME);
+	}
+	if (keyPressedFlags.v && keyChangedFlags.v) {
+		useAntiAliasing = !useAntiAliasing;
+		cout << "Use anti aliasing: " << useAntiAliasing << "\n";
+	}
+	if (keyPressedFlags.b && keyChangedFlags.b) {
+		samplingRate = samplingRate * 2;
+		if (samplingRate > 16) {
+			samplingRate = 16;
+		}
+		else {
+			cout << "Sampling rate: " << samplingRate << "\n";
+			glutDestroyWindow(window);
+			initWindow(WIN_WIDTH, WIN_HEIGHT);
+		}
+	}
+	if (keyPressedFlags.n && keyChangedFlags.n) {
+		if (samplingRate > 2) {
+			samplingRate = samplingRate / 2;
+			cout << "Sampling rate: " << samplingRate << "\n";
+			glutDestroyWindow(window);
+			initWindow(WIN_WIDTH, WIN_HEIGHT);
+		}
+	}
+
+	if (keyPressedFlags.m && keyChangedFlags.m) {
+		switchMode = !switchMode;
+		if (switchMode) {
+			aAMode = GL_NICEST;
+			cout << "Mode: Nicest\n";
+			glutDestroyWindow(window);
+			initWindow(WIN_WIDTH, WIN_HEIGHT);
+		}
+		else {
+			aAMode = GL_FASTEST;
+			cout << "Mode: Fastest\n";
+			glutDestroyWindow(window);
+			initWindow(WIN_WIDTH, WIN_HEIGHT);
+		}
 	}
 
 }

@@ -74,10 +74,11 @@ void main()
 		normal = texture(normalMap, fs_in.TexCoords).rgb;
 		    
     // transform normal vector to range [-1,1]
-    normal = normalize(normal * 2.0 - 1.0) * bumpiness;  // this normal is in tangent space
+	normal.z = normal.z * bumpiness;
+    normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
 	
 	// Ambient
-    vec3 ambient = lightColor * 0.3;//vec3(texture(material.diffuse, fs_in.TexCoords));
+    vec3 ambient = lightColor * 1;//0.3;//vec3(texture(material.diffuse, fs_in.TexCoords));
 
     // Diffuse
 	vec3 lightDir = normalize(lightPos - fs_in.FragPos);
