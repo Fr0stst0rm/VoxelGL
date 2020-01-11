@@ -127,6 +127,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Defines.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="kdTree.cpp" />
     <ClCompile Include="Level1.cpp" />
     <ClCompile Include="LoadedLevel.cpp" />
     <ClCompile Include="LodObject.cpp" />
@@ -147,12 +148,14 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="kdTree.h" />
     <ClInclude Include="Level1.h" />
     <ClInclude Include="LoadedLevel.h" />
     <ClInclude Include="LodObject.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="Object3d.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Spline.h" />
     <ClInclude Include="TextureManager.h" />

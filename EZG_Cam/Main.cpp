@@ -64,7 +64,7 @@ shared_ptr<Spline> camSpline;
 //shader
 //Shader* lightingShader;
 //Shader* lampShader;
-Shader* pointShadow;
+Shader* shadowShader;
 Shader* depthShader;
 
 // lighting
@@ -79,6 +79,7 @@ int samplingRate = 2;
 bool useAntiAliasing = false;
 bool switchMode = false;
 GLenum aAMode = GL_FASTEST;
+unsigned int framebufferMSAA;
 
 void display();
 void exitMain();
@@ -97,6 +98,7 @@ void mouseClicked(int button, int state, int x, int y);
 float findSpawnHeight(float x, float z);
 void renderScene(Shader* shader);
 void initWindow(int width, int height);
+void createMSAAFBO();
 
 int main(int argc, char** argv)
 {
@@ -126,6 +128,7 @@ void initWindow(int width, int height) {
 	window = glutCreateWindow("VoxelTest");
 
 	glutDisplayFunc(&display);
+
 	glutReshapeFunc(&resize);
 
 	glutKeyboardFunc(&keyPressed);
@@ -158,7 +161,7 @@ void initWindow(int width, int height) {
 
 	//lightingShader = new Shader("Shader/basic_lighting.vs", "Shader/basic_lighting.fs");
 	//lampShader = new Shader("Shader/basic_lighting.vs", "Shader/lamp.fs");
-	pointShadow = new Shader("Shader/point_shadows.vs", "Shader/point_shadows.fs");
+	shadowShader = new Shader("Shader/point_shadows.vs", "Shader/point_shadows.fs");
 	depthShader = new Shader("Shader/point_shadows_depth.vs", "Shader/point_shadows_depth.fs", "Shader/point_shadows_depth.gs");
 
 	//depth map FBO
@@ -183,15 +186,17 @@ void initWindow(int width, int height) {
 
 	// shader configuration
 	// --------------------
-	pointShadow->use();
-	pointShadow->setInt("diffuseTexture", 0);
-	pointShadow->setInt("normalMap", 1);
-	pointShadow->setInt("depthMap", 2);
+	shadowShader->use();
+	shadowShader->setInt("diffuseTexture", 0);
+	shadowShader->setInt("normalMap", 1);
+	shadowShader->setInt("depthMap", 2);
 
-	pointShadow->setVec3("lightColor", glm::vec3(0.5f, 0.5f, 0.5f));
+	shadowShader->setVec3("lightColor", glm::vec3(0.5f, 0.5f, 0.5f));
 
 	cout << "Finished loading\n";
 	
+	createMSAAFBO();
+
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
@@ -236,6 +241,33 @@ void initGame()
 	*/
 }
 
+void createMSAAFBO() {
+	// configure MSAA framebuffer
+	// --------------------------
+	glGenFramebuffers(1, &framebufferMSAA);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferMSAA);
+	// create a multisampled color attachment texture
+	unsigned int textureColorBufferMultiSampled;
+	glGenTextures(1, &textureColorBufferMultiSampled);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samplingRate, GL_RGB, WIN_WIDTH, WIN_HEIGHT, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
+	// create a (also multisampled) renderbuffer object for depth and stencil attachments
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, samplingRate, GL_DEPTH24_STENCIL8, WIN_WIDTH, WIN_HEIGHT);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void display()
 {
 	//Get delta time
@@ -248,12 +280,12 @@ void display()
 
 	// Graphics
 
-	if (useAntiAliasing) {
-		glEnable(GL_MULTISAMPLE);
-	}
-	else {
-		glDisable(GL_MULTISAMPLE);
-	}
+	//if (useAntiAliasing) {
+	//	glEnable(GL_MULTISAMPLE);
+	//}
+	//else {
+	//	glDisable(GL_MULTISAMPLE);
+	//}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
@@ -282,38 +314,44 @@ void display()
 	depthShader->setFloat("far_plane", far_plane);
 	depthShader->setVec3("lightPos", lightPos);
 	renderScene(depthShader);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebufferMSAA);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//render scene
 	glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	pointShadow->use();
+	shadowShader->use();
 	glm::mat4 projection = glm::perspective(glm::radians(playerCam->Zoom), (float)WIN_WIDTH / (float)WIN_HEIGHT, near_plane, far_plane);
 	glm::mat4 view = playerCam->GetViewMatrix();
-	pointShadow->setMat4("projection", projection);
-	pointShadow->setMat4("view", view);
+	shadowShader->setMat4("projection", projection);
+	shadowShader->setMat4("view", view);
 	// set lighting uniforms
-	pointShadow->setVec3("lightPos", lightPos);
-	pointShadow->setVec3("viewPos", playerCam->Position);
-	pointShadow->setInt("shadows", shadows);
-	pointShadow->setFloat("far_plane", far_plane);
-	pointShadow->setFloat("bumpiness", bumpiness);
+	shadowShader->setVec3("lightPos", lightPos);
+	shadowShader->setVec3("viewPos", playerCam->Position);
+	shadowShader->setInt("shadows", shadows);
+	shadowShader->setFloat("far_plane", far_plane);
+	shadowShader->setFloat("bumpiness", bumpiness);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
-	renderScene(pointShadow);
+	renderScene(shadowShader);
 
 	//Render light
-	pointShadow->setInt("shadows", false);
+	shadowShader->setInt("shadows", false);
 	glm::mat4 m_model(1.0f);
 	m_model = glm::translate(m_model, glm::vec3(lightPos.x, lightPos.y, lightPos.z));
-	pointShadow->setMat4("model", m_model);
+	shadowShader->setMat4("model", m_model);
 
 	//glColor3f(1, 0, 0);
 	GLUquadric* quad;
 	quad = gluNewQuadric();
 	gluSphere(quad, 0.33, 10, 10);
+
+	//MSAA
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferMSAA);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, WIN_WIDTH, WIN_HEIGHT, 0, 0, WIN_WIDTH, WIN_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	glutSwapBuffers();
 }
@@ -333,7 +371,7 @@ void exitMain() {
 	//Free memory
 	//delete lightingShader;
 	//delete lampShader;
-	delete pointShadow;
+	delete shadowShader;
 	delete depthShader;
 
 	exit(0);
@@ -441,16 +479,18 @@ void checkInput() {
 		}
 		else {
 			cout << "Sampling rate: " << samplingRate << "\n";
-			glutDestroyWindow(window);
-			initWindow(WIN_WIDTH, WIN_HEIGHT);
+			createMSAAFBO();
+			//glutDestroyWindow(window);
+			//initWindow(WIN_WIDTH, WIN_HEIGHT);
 		}
 	}
 	if (keyPressedFlags.n && keyChangedFlags.n) {
 		if (samplingRate > 2) {
 			samplingRate = samplingRate / 2;
 			cout << "Sampling rate: " << samplingRate << "\n";
-			glutDestroyWindow(window);
-			initWindow(WIN_WIDTH, WIN_HEIGHT);
+			createMSAAFBO();
+			//glutDestroyWindow(window);
+			//initWindow(WIN_WIDTH, WIN_HEIGHT);
 		}
 	}
 
@@ -459,14 +499,16 @@ void checkInput() {
 		if (switchMode) {
 			aAMode = GL_NICEST;
 			cout << "Mode: Nicest\n";
-			glutDestroyWindow(window);
-			initWindow(WIN_WIDTH, WIN_HEIGHT);
+			//createMSAAFBO();
+			//glutDestroyWindow(window);
+			//initWindow(WIN_WIDTH, WIN_HEIGHT);
 		}
 		else {
 			aAMode = GL_FASTEST;
 			cout << "Mode: Fastest\n";
-			glutDestroyWindow(window);
-			initWindow(WIN_WIDTH, WIN_HEIGHT);
+			//createMSAAFBO();
+			//glutDestroyWindow(window);
+			//initWindow(WIN_WIDTH, WIN_HEIGHT);
 		}
 	}
 

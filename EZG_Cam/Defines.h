@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <memory>
 
-#include <GL/glut.h> 
+//#include <GL/glut.h> 
 #include <GL/gl.h>  
 #include <GL/glu.h>  
 #include <GL/freeglut.h>
@@ -21,6 +21,7 @@
 
 
 #include "Logger.h"
+#include "Point.h"
 
 #define XYZ_TO_ARRAY_INDEX(X,Y,Z, WIDTH, DEPTH) (((X) + ((Z) * (WIDTH))) + ((y) * (WIDTH) * (DEPTH)))
 
@@ -30,12 +31,6 @@ struct RGBAL {
 	float blue = 1;
 	float alpha = 1;
 	float light = 1;
-};
-
-struct Point {
-	float x = 0;
-	float y = 0;
-	float z = 0;
 };
 
 #endif // !DEFINES_H

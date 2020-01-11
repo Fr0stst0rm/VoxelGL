@@ -83,16 +83,15 @@ void Object3D::draw(float x, float y, float z)
 
 void Object3D::draw(float x, float y, float z, float size)
 {
+	glTranslatef(x, y, z);
+	glScalef(size, size, size);
+
 	glPushMatrix();
 	if (m_shader) {
 		m_model = glm::mat4(1.0f);
 		m_model = glm::translate(m_model, glm::vec3(x, y, z));
 		m_model = glm::scale(m_model, glm::vec3(size));
 		m_shader->setMat4("model", m_model);
-	}
-	else {
-		glTranslatef(x, y, z);
-		glScalef(size, size, size);
 	}
 
 	//glPushMatrix();
