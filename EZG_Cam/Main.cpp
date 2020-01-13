@@ -63,13 +63,13 @@ shared_ptr<Spline> camSpline;
 
 //shader
 //Shader* lightingShader;
-//Shader* lampShader;
+Shader* simpleShader;
 Shader* shadowShader;
 Shader* depthShader;
 
 // lighting
 float lightSpeed = 0.0f;
-glm::vec3 lightPos(0.0f, 5.0f, 0.0f);
+glm::vec3 lightPos(0.0f, 5.0f, 5.0f);
 
 //Normal bumpiness
 float bumpiness = 1;
@@ -163,6 +163,7 @@ void initWindow(int width, int height) {
 	//lampShader = new Shader("Shader/basic_lighting.vs", "Shader/lamp.fs");
 	shadowShader = new Shader("Shader/point_shadows.vs", "Shader/point_shadows.fs");
 	depthShader = new Shader("Shader/point_shadows_depth.vs", "Shader/point_shadows_depth.fs", "Shader/point_shadows_depth.gs");
+	simpleShader = new Shader("Shader/SimpleDraw_VS.glsl", "Shader/SimpleDraw_FS.glsl");
 
 	//depth map FBO
 	glGenFramebuffers(1, &depthMapFBO);
@@ -215,30 +216,6 @@ void initGame()
 
 	playerCam->m_movementSpeed = 10.0f;
 	playerCam->setRotationSpeed(0.5f);
-
-	/*
-	Voxel* voxel;
-	for (uint32_t z = 0; z < LoadedLevel::m_depth; z++) {
-		for (uint32_t y = 0; y < LoadedLevel::m_height; y++) {
-			for (uint32_t x = 0; x < LoadedLevel::m_width; x++) {
-				voxel = LoadedLevel::getVoxel(x, y, z);
-
-				if (voxel->isTransparent()) {
-
-				}
-				else if (voxel->isShining()) {
-					voxel->setShader(lampShader);
-					lightingShader->use();
-					lightingShader->setVec3("lightColor", VoxelTypes::getColor(voxel->m_type).red, VoxelTypes::getColor(voxel->m_type).green, VoxelTypes::getColor(voxel->m_type).blue);
-					lightingShader->setVec3("lightPos", glm::vec3(static_cast<float>(x) - LoadedLevel::m_centerOffsetX, y, static_cast<float>(z) - LoadedLevel::m_centerOffsetZ));
-				}
-				else {
-					voxel->setShader(lightingShader);
-				}
-			}
-		}
-	}
-	*/
 }
 
 void createMSAAFBO() {
@@ -278,6 +255,26 @@ void display()
 	updateInput();
 	checkInput();
 
+	//Move on Spline
+	if (flyOnSplineTime >= 0) {
+
+		playerCam->Yaw = camSpline->getCameraYawAtTime(flyOnSplineTime + (playerCam->m_movementSpeed * deltaTime));
+		playerCam->Pitch = camSpline->getCameraPitchAtTime(flyOnSplineTime + (playerCam->m_movementSpeed * deltaTime));
+
+		std::cout << "Yaw: " << playerCam->Yaw << "\n";
+
+		playerCam->updateCameraVectors();
+
+		playerCam->setPos(PointToVec3(camSpline->getPosByTime(flyOnSplineTime + (playerCam->m_movementSpeed * deltaTime))));
+
+		if (int(flyOnSplineTime + (playerCam->m_movementSpeed * deltaTime)) >= camSpline->getPointCount()) {
+			flyOnSplineTime = -1;
+			cout << "Spline finished: " << (float(glutGet(GLUT_ELAPSED_TIME) - startTime) / 1000.0f) << "s\n";
+		}
+
+		flyOnSplineTime += deltaTime;
+	}
+
 	// Graphics
 
 	//if (useAntiAliasing) {
@@ -291,7 +288,7 @@ void display()
 	glLoadIdentity();
 
 	//Move light
-	lightPos = glm::vec3(5.0f * cos(lightSpeed * lastTime/1000), 5.0f, 5.0f * sin(lightSpeed * lastTime/1000));
+	//lightPos = glm::vec3(0.0f * cos(lightSpeed * lastTime/1000), 5.0f, 0.0f * sin(lightSpeed * lastTime/1000));
 
 	// create depth cubemap transformation matrices
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
@@ -337,16 +334,27 @@ void display()
 
 	renderScene(shadowShader);
 
-	//Render light
-	shadowShader->setInt("shadows", false);
 	glm::mat4 m_model(1.0f);
-	m_model = glm::translate(m_model, glm::vec3(lightPos.x, lightPos.y, lightPos.z));
-	shadowShader->setMat4("model", m_model);
+	simpleShader->use();
+	simpleShader->setMat4("projection", projection);
+	simpleShader->setMat4("view", view);
 
-	//glColor3f(1, 0, 0);
+	//Draw Spline
+
+	simpleShader->setVec3("color", glm::vec3(1, 0, 0));
+	m_model = glm::translate(m_model, glm::vec3(0, 0, 0));
+	simpleShader->setMat4("model", m_model);
+	camSpline->drawSpline();
+
+	
+	//Render light
+	m_model = glm::translate(m_model, glm::vec3(lightPos.x, lightPos.y, lightPos.z));
+	simpleShader->setMat4("model", m_model);
+	simpleShader->setVec3("color", glm::vec3(1,1,0.9f));
+	
 	GLUquadric* quad;
 	quad = gluNewQuadric();
-	gluSphere(quad, 0.33, 10, 10);
+	gluSphere(quad, 0.33f, 10, 10);
 
 	//MSAA
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferMSAA);
@@ -415,15 +423,12 @@ void checkInput() {
 	if (keyPressedFlags.left) {
 		bumpiness -= deltaTime;
 		if (bumpiness < 0) bumpiness = 0;
-		//cout << "Bumpiness: " << bumpiness << "\n";
+		cout << "Bumpiness: " << bumpiness << "\n";
 	}
 	if (keyPressedFlags.right) {
 		bumpiness += deltaTime;
 		if (bumpiness > 1) bumpiness = 1;
-		//cout << "Bumpiness: " << bumpiness << "\n";
-	}
-	if (keyPressedFlags.e) {
-		lightPos.z += 0.5 * deltaTime;
+		cout << "Bumpiness: " << bumpiness << "\n";
 	}
 	if (keyPressedFlags.w) {
 		playerCam->ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
@@ -445,19 +450,19 @@ void checkInput() {
 		//playerCam->m_pos.z += playerCam->getLookingDir().x * playerCam->m_walkingSpeed * deltaTime;
 		//playerCam->m_pos.x += playerCam->getLookingDir().z * playerCam->m_walkingSpeed * deltaTime;
 	}
-	/*if (keyPressedFlags.q) {
+	if (keyPressedFlags.q) {
 		playerCam->setPos(glm::vec3(playerCam->getPos().x, playerCam->getPos().y - playerCam->m_movementSpeed * deltaTime, playerCam->getPos().z));
 		//playerCam->m_pos.y -= playerCam->m_movementSpeed * deltaTime;
 	}
 	if (keyPressedFlags.e) {
 		playerCam->setPos(glm::vec3(playerCam->getPos().x, playerCam->getPos().y + playerCam->m_movementSpeed * deltaTime, playerCam->getPos().z));
 		//playerCam->m_pos.y += playerCam->m_movementSpeed * deltaTime;
-	}*/
+	}
 	if (keyPressedFlags.c && keyChangedFlags.c) {
 		camSpline->clearPoints();
 	}
 	if (keyPressedFlags.space && keyChangedFlags.space) {
-		camSpline->addPoint({ playerCam->getPos().x, playerCam->getPos().y, playerCam->getPos().z }, playerCam->m_quatRot);
+		camSpline->addPoint({ playerCam->getPos().x, playerCam->getPos().y, playerCam->getPos().z }, playerCam->Yaw, playerCam->Pitch);
 	}
 	if (keyPressedFlags.t && keyChangedFlags.t) {
 		camSpline->toggleSplineRender();
@@ -549,21 +554,6 @@ void mouseMoved(int x, int y)
 
 	playerCam->ProcessMouseMovement(xoffset, yoffset);
 
-	/*
-
-	//Rotation um y achse mit mouse x value
-
-	float xDeg = static_cast<int>(static_cast<float>(y - xRotationOffset) * playerCam->m_rotationSpeed) % 360;
-	float yDeg = static_cast<int>(static_cast<float>(x - yRotationOffset) * playerCam->m_rotationSpeed) % 360;
-
-	glm::quat mouseRot(glm::vec3(glm::radians(xDeg), glm::radians(yDeg), glm::radians(0.0f)));
-
-	playerCam->m_quatRot = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f));
-	playerCam->m_quatRot *= glm::quat({ 0.0f, glm::radians(yDeg), 0.0f });
-	playerCam->m_quatRot = glm::quat({ glm::radians(xDeg), 0.0f, 0.0f }) * playerCam->m_quatRot;
-
-	//cout << "CamRot Y: " << glm::degrees(glm::eulerAngles(playerCam->m_keyRot).y) << "\n";
-	*/
 }
 
 
@@ -581,30 +571,6 @@ float findSpawnHeight(float x, float z) {
 }
 
 void renderScene(Shader* shader) {
-	//LOD Test
-	//float distance = (lodTest->m_pos - player->m_pos).length();
-	//cout << "LodDistance: " << distance << "\n";
-	//lodTest->draw(distance);
-
-	//Draw Spline
-
-	/*
-	if (flyOnSplineTime >= 0) {
-
-		playerCam->m_quatRot = camSpline->getCameraRotationAtTime(flyOnSplineTime * playerCam->m_movementSpeed);
-
-		flyOnSplineTime += deltaTime;
-
-		if (int(flyOnSplineTime * playerCam->m_movementSpeed) >= camSpline->getPointCount()) {
-			flyOnSplineTime = -1;
-			cout << "Spline finished: " << (float(glutGet(GLUT_ELAPSED_TIME) - startTime) / 1000.0f) << "s\n";
-		}
-
-	}
-	*/
-
-	//camSpline->drawSpline();
-
 
 	//Draw level
 
@@ -618,9 +584,6 @@ void renderScene(Shader* shader) {
 		for (uint32_t y = 0; y < LoadedLevel::m_height; y++) {
 			for (uint32_t x = 0; x < LoadedLevel::m_width; x++) {
 				voxel = LoadedLevel::getVoxel(x, y, z);
-
-				//cout << "X " << x << " Y " << y << " Z " << z << " -> Index: " << XYZ_TO_ARRAY_INDEX(x, y, z, LoadedLevel::m_width, LoadedLevel::m_depth) << " = " << LoadedLevel::m_map[XYZ_TO_ARRAY_INDEX(x, y, z, LoadedLevel::m_width, LoadedLevel::m_depth)] << "\n";
-				//cout << "Size of voxel: " << sizeof(voxel) << "\n";
 
 				if (!voxel->isTransparent()) {
 					voxel->setShader(shader);
@@ -643,25 +606,4 @@ void renderScene(Shader* shader) {
 		}
 	}
 
-	//cout << "Start transparent\n";
-
-	/*
-	//Draw transparent objects here
-	glDepthMask(GL_FALSE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//Draw farest z layer first
-	while (!trasparentSortingVector.empty())
-	{
-		voxel = LoadedLevel::getVoxel(trasparentSortingVector.back().position);
-		voxel->setShader(lightingShader);
-		voxel->drawTransparent(trasparentSortingVector.back().position.x - LoadedLevel::m_centerOffsetX, trasparentSortingVector.back().position.y, trasparentSortingVector.back().position.z - LoadedLevel::m_centerOffsetZ);
-
-		trasparentSortingVector.pop_back();
-	}
-
-
-	glDisable(GL_BLEND);
-	glDepthMask(GL_TRUE);
-	*/
 }

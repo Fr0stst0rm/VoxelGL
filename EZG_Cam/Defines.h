@@ -17,6 +17,8 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include "MathDefines.h"
+
 #include "Shader.h"
 
 
@@ -32,5 +34,8 @@ struct RGBAL {
 	float alpha = 1;
 	float light = 1;
 };
+
+glm::vec3 PointToVec3(const Point& p);
+Point Vec3ToPoint(const glm::vec3& v);
 
 #endif // !DEFINES_H

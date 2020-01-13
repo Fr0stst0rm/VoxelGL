@@ -19,7 +19,7 @@ public:
 
 	void addPoint(float x, float y, float z);
 	void addPoint(Point p);
-	void addPoint(Point p, glm::quat r);
+	void addPoint(Point p, float yaw, float pitch);
 
 	void clearPoints();
 
@@ -28,7 +28,7 @@ public:
 	Point getStart();
 	Point getEnd();
 	Point getByIndex(int index);
-	Point getByTime(float time);
+	Point getPosByTime(float time);
 
 	int getPointCount();
 	
@@ -43,7 +43,8 @@ public:
 
 	Point calcSplinePoint(Point p0, Point p1, Point p2, Point p3, float t);
 
-	glm::quat getCameraRotationAtTime(float time);
+	float getCameraYawAtTime(float time);
+	float getCameraPitchAtTime(float time);
 
 
 	//Resolution steps per distance unit --> Calulate point distance 
@@ -55,7 +56,7 @@ protected:
 	std::vector<Point>* m_ControlPoints;
 	std::vector<Point>* m_SplinePoints;
 
-	std::vector<glm::quat> * m_CamRotQuat;
+	std::vector<std::pair<float,float>> * m_CamRot;
 
 	std::vector<Point> calcSplineSeg(Point p0, Point p1, Point p2, Point p3);
 

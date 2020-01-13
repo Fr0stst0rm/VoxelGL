@@ -5,7 +5,7 @@ Spline::Spline() : m_Spline(true)
 	m_ControlPoints = new std::vector<Point>();
 	m_SplinePoints = new std::vector<Point>();
 
-	m_CamRotQuat = new std::vector<glm::quat>;
+	m_CamRot = new std::vector<std::pair<float,float>>;
 
 	
 	m_ControlPoints->push_back({ 0.0f, 2.0f, 4.0f });
@@ -14,11 +14,11 @@ Spline::Spline() : m_Spline(true)
 	m_ControlPoints->push_back({ 0.0f, 2.0f, 1.0f });
 	m_ControlPoints->push_back({ 0.0f, 2.0f, 0.0f });
 
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, glm::radians(90.0f), 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, glm::radians(90.0f), 0.0f)));
+	m_CamRot->push_back(std::pair<float, float>(-90, 0));
+	m_CamRot->push_back(std::pair<float, float>(-90, 0));
+	m_CamRot->push_back(std::pair<float, float>(-90, 0));
+	m_CamRot->push_back(std::pair<float, float>(-90, 0));
+	m_CamRot->push_back(std::pair<float, float>(-90, 0));
 	
 	
 	
@@ -44,26 +44,26 @@ Spline::Spline() : m_Spline(true)
 	m_ControlPoints->push_back({ 4.0f, 5.0f, 1.0f });
 	m_ControlPoints->push_back({ 4.0f, 4.0f, 2.0f });
 
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.5f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.5f, 0.2f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(1.0f, -0.9f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.5f, -2.3f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -0.9f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -0.5f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.1f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -0.05f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -0.5f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -1.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -1.0f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -1.1f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -1.2f, 0.0f)));
-	m_CamRotQuat->push_back(glm::quat(glm::vec3(0.0f, -1.3f, 0.0f)));
+	m_CamRot->push_back(std::pair<float, float>(-90, 10));
+	m_CamRot->push_back(std::pair<float, float>(-80, 10));
+	m_CamRot->push_back(std::pair<float, float>(-70, 0));
+	m_CamRot->push_back(std::pair<float, float>(-60, 0));
+	m_CamRot->push_back(std::pair<float, float>(-50, -10));
+	m_CamRot->push_back(std::pair<float, float>(-60, -10));
+	m_CamRot->push_back(std::pair<float, float>(-70, 0));
+	m_CamRot->push_back(std::pair<float, float>(-80, 0));
+	m_CamRot->push_back(std::pair<float, float>(-90, 10));
+	m_CamRot->push_back(std::pair<float, float>(-100, 10));
+	m_CamRot->push_back(std::pair<float, float>(-110, 0));
+	m_CamRot->push_back(std::pair<float, float>(-120, 0));
+	m_CamRot->push_back(std::pair<float, float>(-130, -10));
+	m_CamRot->push_back(std::pair<float, float>(-130, -10));
+	m_CamRot->push_back(std::pair<float, float>(-130, 0));
+	m_CamRot->push_back(std::pair<float, float>(-120, 0));
+	m_CamRot->push_back(std::pair<float, float>(-110, 10));
+	m_CamRot->push_back(std::pair<float, float>(-100, 10));
+	m_CamRot->push_back(std::pair<float, float>(-100, 0));
+	m_CamRot->push_back(std::pair<float, float>(-100, 0));
 	
 
 	recalcSpline();
@@ -77,8 +77,8 @@ Spline::~Spline()
 	m_SplinePoints->clear();
 	delete m_SplinePoints;
 	
-	m_CamRotQuat->clear();
-	delete m_CamRotQuat;
+	m_CamRot->clear();
+	delete m_CamRot;
 }
 
 void Spline::setRendered(bool b)
@@ -92,10 +92,10 @@ void Spline::addPoint(float x, float y, float z)
 }
 
 void Spline::addPoint(Point p) {
-	addPoint(p, glm::quat(glm::vec3(0.0f,0.0f,0.0f)));
+	addPoint(p, 0,0);
 }
 
-void Spline::addPoint(Point p, glm::quat r)
+void Spline::addPoint(Point p, float yaw, float pitch)
 {
 	/*TODO Debug
 	if (m_ControlPoints->size() < 1) {
@@ -120,7 +120,7 @@ void Spline::addPoint(Point p, glm::quat r)
 	m_ControlPoints->push_back(p);
 	cout << "Points " << m_ControlPoints->size() << "\n";
 
-	m_CamRotQuat->push_back(r);
+	m_CamRot->push_back(std::pair<float,float>(yaw,pitch));
 
 	//TODO Remove
 	recalcSpline();
@@ -131,6 +131,7 @@ void Spline::clearPoints()
 {
 	m_ControlPoints->clear();
 	m_SplinePoints->clear();
+	m_CamRot->clear();
 }
 
 void Spline::recalcSpline()
@@ -191,7 +192,7 @@ Point Spline::getByIndex(int index)
 	return m_SplinePoints->at(index);
 }
 
-Point Spline::getByTime(float time)
+Point Spline::getPosByTime(float time)
 {
 	int index = time;
 	float t = time - float(index);
@@ -329,42 +330,76 @@ void Spline::printPoints(std::vector<Point>* vec)
 	}
 }
 
-glm::quat Spline::getCameraRotationAtTime(float time) {
+float Spline::getCameraYawAtTime(float time) {
 	int index = time;
 	float t = time - float(index);
 
 	//cout << "t: " << time << "\n";
 
-	if (index >= m_ControlPoints->size()) {
-		index = m_ControlPoints->size() - 1;
+	if (index >= m_CamRot->size()) {
+		index = m_CamRot->size() - 1;
 		t = 1;
 	}
 
-	glm::quat q0 = m_CamRotQuat->at(0);
+	float yaw1 = m_CamRot->at(index).first;
 
-	if (index > 0) {
-		q0 = m_CamRotQuat->at(index - 1);
+	float yaw2 = (m_CamRot->end() - 1)->first;
+	if ((index + 1) < m_CamRot->size()) {
+		yaw2 = m_CamRot->at(index + 1).first;
 	}
 
-	glm::quat q1 = m_CamRotQuat->at(index);
+	Point p1 = m_ControlPoints->at(index);
 
-	glm::quat q2 = *(m_CamRotQuat->end() - 1);
-	if ((index + 1) < m_CamRotQuat->size()) {
-		q2 = m_CamRotQuat->at(index + 1);
+	Point p2 = *(m_ControlPoints->end() - 1);
+	if ((index + 1) < m_ControlPoints->size()) {
+		p2 = m_ControlPoints->at(index + 1);
 	}
 
-	glm::quat q3 = *(m_CamRotQuat->end() - 1);
-	if ((index + 2) < m_CamRotQuat->size()) {
-		q3 = m_CamRotQuat->at(index + 2);
+
+	float distance = Vector3f(p1).distance(p2);
+
+	if (distance > 0) {
+		float currDis = distance * t;
+		return (yaw1 * ((distance - currDis) / distance)) + (yaw2 * (currDis / distance));
+	}
+	return yaw2;
+}
+
+float Spline::getCameraPitchAtTime(float time) {
+	int index = time;
+	float t = time - float(index);
+
+	//cout << "t: " << time << "\n";
+
+	if (index >= m_CamRot->size()) {
+		index = m_CamRot->size() - 1;
+		t = 1;
 	}
 
-	//float distance = Vector3f(p1).distance(p2);
+	float pitch1 = m_CamRot->at(index).second;
 
-	//float ratio = (cameraDistanceTravelled - distanceToPoint[i - 1]) / (distanceToPoint[i] - distanceToPoint[i - 1]);
+	float pitch2 = (m_CamRot->end() - 1)->second;
+	if ((index + 1) < m_CamRot->size()) {
+		pitch2 = m_CamRot->at(index + 1).second;
+	}
+
+	Point p1 = m_ControlPoints->at(index);
+
+	Point p2 = *(m_ControlPoints->end() - 1);
+	if ((index + 1) < m_ControlPoints->size()) {
+		p2 = m_ControlPoints->at(index + 1);
+	}
 
 
-	return this->squad(q0, q1, q2, q3, t);
-	//return glm::slerp(q1, q2, t);
+	float distance = Vector3f(p1).distance(p2);
+
+	if (distance > 0) {
+		float currDis = distance * t;
+
+		return (pitch1 * ((distance - currDis) / distance)) + (pitch2 * (currDis / distance));
+	}
+
+	return pitch2;
 }
 
 glm::quat Spline::squad(glm::quat q0, glm::quat q1, glm::quat q2, glm::quat q3, float t)
