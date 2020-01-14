@@ -100,6 +100,13 @@ void updateInput() {
 		(keyPressedFlags.m != lastKeyState.m) ? keyChangedFlags.m = true : keyChangedFlags.m = false;
 
 	}
+	if (keyPressedFlags.k) {
+		(keyPressedFlags.k != lastKeyState.k) ? keyChangedFlags.k = true : keyChangedFlags.k = false;
+	}
+	else {
+		(keyPressedFlags.k != lastKeyState.k) ? keyChangedFlags.k = true : keyChangedFlags.k = false;
+
+	}
 	if (keyPressedFlags.up) {
 		(keyPressedFlags.up != lastKeyState.up) ? keyChangedFlags.up = true : keyChangedFlags.up = false;
 	}
@@ -213,6 +220,9 @@ void keyPressed(unsigned char key, int x, int y)
 	case 'm':
 		keyPressedFlags.m = true;
 		break;
+	case 'k':
+		keyPressedFlags.k = true;
+		break;
 	case ' ':
 		keyPressedFlags.space = true;
 		break;
@@ -282,6 +292,9 @@ void keyUp(unsigned char key, int x, int y) {
 		break;
 	case 'm':
 		keyPressedFlags.m = false;
+		break;
+	case 'k':
+		keyPressedFlags.k = false;
 		break;
 	case ' ':
 		keyPressedFlags.space = false;

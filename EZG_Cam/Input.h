@@ -19,6 +19,7 @@ struct KeyFlags
 	bool b : 1;
 	bool n : 1;
 	bool m : 1;
+	bool k : 1;
 	bool space : 1;
 	bool esc : 1;
 	bool up : 1;

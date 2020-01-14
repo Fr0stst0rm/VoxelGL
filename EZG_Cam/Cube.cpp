@@ -7,6 +7,48 @@ Cube::Cube()
 	memset(&m_settings, 0xff, sizeof(m_settings));
 	m_settings.glow = false;
 	m_settings.transparent = false;
+
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+	// front face
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+	// left face
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, 1.0f));
+	// right face
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, 1.0f));
+	// bottom face
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, -1.0f, -1.0f));
+	// top face
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, -1.0f));
+	m_Vertices.push_back(glm::vec3(-1.0f, 1.0f, 1.0f));
 }
 
 Cube::~Cube()
@@ -73,48 +115,49 @@ void Cube::createCubeMesh()
 	{
 		float vertices[] = {
 			// back face
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			m_Vertices[0].x, m_Vertices[0].y, m_Vertices[0].z,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			m_Vertices[1].x, m_Vertices[1].y, m_Vertices[1].z,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[2].x, m_Vertices[2].y, m_Vertices[2].z,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			m_Vertices[3].x, m_Vertices[3].y, m_Vertices[3].z,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[4].x, m_Vertices[4].y, m_Vertices[4].z,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			m_Vertices[5].x, m_Vertices[5].y, m_Vertices[5].z,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
 			// front face
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			m_Vertices[6].x, m_Vertices[6].y, m_Vertices[6].z,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			m_Vertices[7].x, m_Vertices[7].y, m_Vertices[7].z,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			m_Vertices[8].x, m_Vertices[8].y, m_Vertices[8].z,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[9].x, m_Vertices[9].y, m_Vertices[9].z,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[10].x, m_Vertices[10].y, m_Vertices[10].z,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			m_Vertices[11].x, m_Vertices[11].y, m_Vertices[11].z,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
 			// left face
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			m_Vertices[12].x, m_Vertices[12].y, m_Vertices[12].z, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			m_Vertices[13].x, m_Vertices[13].y, m_Vertices[13].z, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			m_Vertices[14].x, m_Vertices[14].y, m_Vertices[14].z, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			m_Vertices[15].x, m_Vertices[15].y, m_Vertices[15].z, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			m_Vertices[16].x, m_Vertices[16].y, m_Vertices[16].z, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			m_Vertices[17].x, m_Vertices[17].y, m_Vertices[17].z, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
 			// right face
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+			m_Vertices[18].x, m_Vertices[18].y, m_Vertices[18].z,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			m_Vertices[19].x, m_Vertices[19].y, m_Vertices[19].z,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			m_Vertices[20].x, m_Vertices[20].y, m_Vertices[20].z,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[21].x, m_Vertices[21].y, m_Vertices[21].z,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			m_Vertices[22].x, m_Vertices[22].y, m_Vertices[22].z,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			m_Vertices[23].x, m_Vertices[23].y, m_Vertices[23].z,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left
 			// bottom face
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			m_Vertices[24].x, m_Vertices[24].y, m_Vertices[24].z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			m_Vertices[25].x, m_Vertices[25].y, m_Vertices[25].z,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			m_Vertices[26].x, m_Vertices[26].y, m_Vertices[26].z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			m_Vertices[27].x, m_Vertices[27].y, m_Vertices[27].z,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			m_Vertices[28].x, m_Vertices[28].y, m_Vertices[28].z,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			m_Vertices[29].x, m_Vertices[29].y, m_Vertices[29].z,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
 			// top face
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+			m_Vertices[30].x, m_Vertices[30].y, m_Vertices[30].z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			m_Vertices[31].x, m_Vertices[31].y, m_Vertices[31].z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			m_Vertices[32].x, m_Vertices[32].y, m_Vertices[32].z,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
+			m_Vertices[33].x, m_Vertices[33].y, m_Vertices[33].z,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			m_Vertices[34].x, m_Vertices[34].y, m_Vertices[34].z,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			m_Vertices[35].x, m_Vertices[35].y, m_Vertices[35].z,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left
 		};
+
 		glGenVertexArrays(1, &objVAO);
 		glGenBuffers(1, &objVBO);
 		// fill buffer
@@ -133,7 +176,7 @@ void Cube::createCubeMesh()
 	}
 	// render Cube
 	glBindVertexArray(objVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, m_Vertices.size());
 	glBindVertexArray(0);
 	
 	/* TODO
@@ -171,4 +214,42 @@ bool Cube::isTransparent()
 bool Cube::isGlowing()
 {
 	return m_settings.glow;
+}
+
+std::vector<Vertex> Cube::GetVertices(GLuint id, glm::mat4 model)
+{
+	std::vector<Vertex> verts = std::vector<Vertex>();
+
+		for (int i = 0; i < m_Vertices.size(); i++) {
+
+			Vertex vertex;
+			vertex.x = m_Vertices[i].x;
+			vertex.y = m_Vertices[i].y;
+			vertex.z = m_Vertices[i].z;
+			
+			glm::vec4 pos = glm::vec4(vertex.x, vertex.y, vertex.z, 1);
+			//std::cout << "x: " << pos.x << "\n";
+			//std::cout << "y: " << pos.y << "\n";
+			//std::cout << "z: " << pos.z << "\n";
+			//std::cout << "w: " << pos.w << "\n";
+
+			glm::vec3 vert3 = model * pos;
+
+			//std::cout << "x: " << vert3.x << "\n";
+			//std::cout << "y: " << vert3.y << "\n";
+			//std::cout << "z: " << vert3.z << "\n";
+
+			Vertex v;
+			v.x = vert3.x;
+			v.y = vert3.y;
+			v.z = vert3.z;
+
+
+			v.objID = id;
+
+			verts.push_back(v);
+		}
+
+
+	return verts;
 }

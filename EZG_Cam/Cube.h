@@ -2,6 +2,8 @@
 #ifndef CUBE_H
 #define CUBE_H 
 
+
+#include<vector>
 #include "Object3d.h"
 #include "Defines.h"
 
@@ -41,6 +43,7 @@ public:
 	bool isTransparent();
 	bool isGlowing();
 	
+	std::vector<Vertex> GetVertices(GLuint id, glm::mat4 model);
 
 protected:
 
@@ -53,8 +56,9 @@ protected:
 
 private:
 
+	std::vector<glm::vec3> m_Vertices = std::vector<glm::vec3>();
+
 	void createCubeMesh();
-	
 
 };
 

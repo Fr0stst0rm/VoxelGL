@@ -1,6 +1,6 @@
 #include "Voxel.h"
 
-#define VOXEL_SIZE 0.5f
+const float Voxel::VOXEL_SIZE = 0.5f;
 
 Voxel::Voxel(VoxelType type) : m_type(type)
 {
@@ -46,4 +46,3 @@ bool Voxel::isShining()
 {
 	return VoxelTypes::isShining(m_type);
 }
-

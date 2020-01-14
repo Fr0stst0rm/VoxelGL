@@ -19,6 +19,7 @@
 
 #include "LodObject.h"
 #include "Spline.h"
+#include "kdTree.h"
 
 using namespace std;
 
@@ -80,6 +81,10 @@ bool useAntiAliasing = false;
 bool switchMode = false;
 GLenum aAMode = GL_FASTEST;
 unsigned int framebufferMSAA;
+
+//KDTree
+KDTree* kdTree;
+bool drawTree = false;
 
 void display();
 void exitMain();
@@ -195,7 +200,7 @@ void initWindow(int width, int height) {
 	shadowShader->setVec3("lightColor", glm::vec3(0.5f, 0.5f, 0.5f));
 
 	cout << "Finished loading\n";
-	
+
 	createMSAAFBO();
 
 	lastTime = glutGet(GLUT_ELAPSED_TIME);
@@ -211,6 +216,31 @@ void initGame()
 	//Load Level
 	LoadedLevel::loadLevel(Level1::map, Level1::width, Level1::height, Level1::depth);
 
+
+	//Init KDTree
+	glm::mat4 model = glm::mat4(1.0f);
+	
+	std::vector<Vertex> vertices = std::vector<Vertex>();
+	Voxel * voxel = nullptr;
+	for (uint32_t z = 0; z < LoadedLevel::m_depth; z++) {
+		for (uint32_t y = 0; y < LoadedLevel::m_height; y++) {
+			for (uint32_t x = 0; x < LoadedLevel::m_width; x++) {
+				model = glm::mat4(1.0f);
+				voxel = LoadedLevel::getVoxel(x, y, z);
+
+				model = glm::translate(model, glm::vec3(static_cast<float>(x)- LoadedLevel::m_centerOffsetX, y, static_cast<float>(z)- LoadedLevel::m_centerOffsetX));
+				model = glm::scale(model, glm::vec3(Voxel::VOXEL_SIZE, Voxel::VOXEL_SIZE, Voxel::VOXEL_SIZE));
+
+				std::vector<Vertex> verts = voxel->GetVertices(x*y*z, model);
+
+				 
+
+				vertices.insert(vertices.end(), verts.begin(), verts.end());
+			}
+		}
+	}
+	kdTree = new KDTree(vertices);
+	
 	//Config spawn
 	playerCam->setPos(glm::vec3(0.0f, findSpawnHeight(0.0f, 4.0f), 4.0f));
 
@@ -311,6 +341,7 @@ void display()
 	depthShader->setFloat("far_plane", far_plane);
 	depthShader->setVec3("lightPos", lightPos);
 	renderScene(depthShader);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferMSAA);
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -340,23 +371,28 @@ void display()
 	simpleShader->setMat4("view", view);
 
 	//Draw Spline
-
 	simpleShader->setVec3("color", glm::vec3(1, 0, 0));
 	m_model = glm::translate(m_model, glm::vec3(0, 0, 0));
 	simpleShader->setMat4("model", m_model);
 	camSpline->drawSpline();
 
-	
+	//Draw kdTree
+	if (drawTree) {
+		simpleShader->setVec3("color", glm::vec3(0, 1, 0));
+		kdTree->drawWireframe(simpleShader);
+	}
+
 	//Render light
 	m_model = glm::translate(m_model, glm::vec3(lightPos.x, lightPos.y, lightPos.z));
 	simpleShader->setMat4("model", m_model);
-	simpleShader->setVec3("color", glm::vec3(1,1,0.9f));
-	
+	simpleShader->setVec3("color", glm::vec3(1, 1, 0.9f));
+
 	GLUquadric* quad;
 	quad = gluNewQuadric();
 	gluSphere(quad, 0.33f, 10, 10);
 
 	//MSAA
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebufferMSAA);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBlitFramebuffer(0, 0, WIN_WIDTH, WIN_HEIGHT, 0, 0, WIN_WIDTH, WIN_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -460,6 +496,9 @@ void checkInput() {
 	}
 	if (keyPressedFlags.c && keyChangedFlags.c) {
 		camSpline->clearPoints();
+	}
+	if (keyPressedFlags.k && keyChangedFlags.k) {
+		drawTree = !drawTree;
 	}
 	if (keyPressedFlags.space && keyChangedFlags.space) {
 		camSpline->addPoint({ playerCam->getPos().x, playerCam->getPos().y, playerCam->getPos().z }, playerCam->Yaw, playerCam->Pitch);
@@ -574,7 +613,7 @@ void renderScene(Shader* shader) {
 
 	//Draw level
 
-	Voxel* voxel;
+	Voxel* voxel = nullptr;
 	std::vector<SortingHelper> trasparentSortingVector;
 
 	//Draw opaque objects here
@@ -605,5 +644,4 @@ void renderScene(Shader* shader) {
 			}
 		}
 	}
-
 }

@@ -7,6 +7,8 @@
 #include "VoxelTypes.h" //TODO del after voxel class is created
 #include "Vector3f.h"
 
+
+
 struct SortingHelper
 {
 	Vector3f position;
@@ -29,9 +31,9 @@ public:
 
 	VoxelType m_type;
 
-protected:
-	
+	static const float VOXEL_SIZE;
 
+protected:
 private:
 
 	
